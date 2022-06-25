@@ -1,0 +1,17 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: split_dataset
+display_name: split_dataset
+command: >-
+  python split_dataset.py
+  --datasets-pkl ${{inputs.datasets_pkl}}
+  --transformed_data ${{outputs.transformed_data}}
+code: ../../src/pipeline/features
+environment: azureml:ltcftenv@latest
+inputs:
+  datasets_pkl:
+    type: path
+outputs:
+  transformed_data:
+    type: path

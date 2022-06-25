@@ -1,0 +1,20 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: format
+display_name: format
+command: >-
+  python format.py
+  --marketing-csv ${{inputs.marketing_csv}}/datasets.pkl
+  --replacements ${{inputs.replacements}}
+  --transformed_data ${{outputs.transformed_data}}
+code: ../../src/pipeline/features
+environment: azureml:ltcftenv@latest
+inputs:
+  marketing_csv:
+    type: path
+  replacements:
+    type: string
+outputs:
+  transformed_data:
+    type: path

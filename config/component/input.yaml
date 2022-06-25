@@ -1,0 +1,23 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: input
+display_name: input
+is_deterministic: False
+command: >-
+  python input.py
+  --input-csv ${{inputs.input_csv}}
+  --separator ${{inputs.separator}}
+  --transformed_data ${{outputs.transformed_data}}
+code: ../../src/pipeline/features
+environment: azureml:ltcftenv@latest
+inputs:
+  input_csv:
+    type: path
+  separator:
+    type: string
+    default: comma
+outputs:
+  transformed_data:
+    type: path
+

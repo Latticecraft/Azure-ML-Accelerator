@@ -1,0 +1,21 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: get_best_model
+display_name: get_best_model
+is_deterministic: False
+command: >-
+  python get_best_model.py
+  --sweep-name ${{inputs.sweep_name}}
+  --train-artifacts ${{inputs.train_artifacts}} 
+  --transformed-data ${{outputs.transformed_data}}
+code: ../../src/pipeline/model
+environment: azureml:ltcftenv@latest
+inputs:
+  sweep_name:
+    type: string
+  train_artifacts:
+    type: path
+outputs:
+  transformed_data:
+    type: path

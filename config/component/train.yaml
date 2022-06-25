@@ -1,0 +1,49 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: train
+display_name: train
+is_deterministic: False
+command: >-
+  python train.py 
+    --datasets-pkl ${{inputs.datasets_pkl}}
+    --label ${{inputs.label}}
+    --imputer ${{inputs.imputer}}
+    --balancer ${{inputs.balancer}}
+    --max-depth ${{inputs.max_depth}}
+    --num-leaves ${{inputs.num_leaves}}
+    --colsample-bytree ${{inputs.colsample_bytree}}
+    --subsample ${{inputs.subsample}}
+    --learning-rate ${{inputs.learning_rate}}
+    --train-artifacts ${{outputs.train_artifacts}}
+code: ../../src/pipeline/model
+environment: azureml:ltcftenv@latest
+inputs:
+  datasets_pkl:
+    type: path
+  label:
+    type: string
+  imputer:
+    type: string
+    default: mean
+  balancer:
+    type: string
+    default: ros
+  max_depth:
+    type: number
+    default: 5
+  num_leaves:
+    type: number
+    default: 10
+  colsample_bytree:
+    type: number
+    default: 0.5
+  subsample:
+    type: number
+    default: 0.5
+  learning_rate:
+    type: number
+    default: 0.05
+outputs:
+  train_artifacts:
+    type: path

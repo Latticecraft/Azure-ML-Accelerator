@@ -1,0 +1,92 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+experiment_name: placeholder
+compute: azureml:cpu-cluster
+inputs:
+  datasets_pkl: 
+    path: azureml://datastores/output/paths/placeholder
+    type: uri_folder
+  trainlog:
+    type: uri_folder
+    path: azureml://datastores/output/paths/placeholder
+    mode: ro_mount
+  sweep_name: placeholder
+  label: placeholder
+  trials: 10
+jobs:
+  sweep_job:
+    type: sweep
+    trial: file:../component/train.yaml
+    inputs:
+      datasets_pkl: ${{parent.inputs.datasets_pkl}}
+      label: ${{parent.inputs.label}}
+    outputs:
+      train_artifacts:
+    compute: azureml:cpu-cluster
+    sampling_algorithm: random
+    search_space:
+      imputer:
+        type: choice
+        values: ['mean', 'knn']
+      balancer:
+        type: choice
+        values: ['none', 'ros', 'smote']
+      max_depth:
+        type: quniform
+        min_value: 5
+        max_value: 20
+        q: 1
+      num_leaves:
+        type: quniform
+        min_value: 10
+        max_value: 50
+        q: 1
+      colsample_bytree:
+        type: uniform
+        min_value: 0.5
+        max_value: 1.0
+      subsample:
+        type: uniform
+        min_value: 0.5
+        max_value: 1.0
+      learning_rate:
+        type: uniform
+        min_value: 0.05
+        max_value: 0.2
+    objective:
+      goal: minimize
+      primary_metric: valid_0-binary_logloss
+    limits:
+      max_total_trials: 5
+      max_concurrent_trials: 5
+      timeout: 7200
+  get_best_model_job:
+    type: command
+    component: file:../component/get_best_model.yaml
+    inputs:
+      sweep_name: ${{parent.inputs.sweep_name}}
+      train_artifacts: ${{parent.jobs.sweep_job.outputs.train_artifacts}}
+    outputs:
+      transformed_data:
+  calibrate_job:
+    type: command
+    component: file:../component/calibrate.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.get_best_model_job.outputs.transformed_data}}
+      label: ${{parent.inputs.label}}
+    outputs:
+      transformed_data:
+  register_model_job:
+    type: command
+    component: file:../component/register_model.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.calibrate_job.outputs.transformed_data}}
+  log_metrics_job:
+    type: command
+    component: file:../component/log_metrics.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.calibrate_job.outputs.transformed_data}}
+      destination_folder: trainlog
+    outputs:
+      transformed_data:
+  

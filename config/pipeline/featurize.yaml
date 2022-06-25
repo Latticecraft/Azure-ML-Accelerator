@@ -1,0 +1,172 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+tags:
+  project:
+inputs:
+  input_csv:
+    type: uri_file
+    path: azureml://datastores/input/paths/placeholder
+  runinfo:
+    type: uri_folder
+    path: azureml://datastores/output/paths/placeholder
+    mode: ro_mount
+  trainlog:
+    type: uri_folder
+    path: azureml://datastores/output/paths/placeholder
+    mode: ro_mount
+  separator: comma
+  label: placeholder
+  unwanted: placeholder
+  replacements: placeholder
+  downsample_enable: False
+  downsample_ratio: 0.1
+experiment_name: placeholder
+compute: azureml:cpu-cluster
+jobs:
+  input_job:
+    type: command
+    component: file:../component/input.yaml
+    inputs:
+      environment: ${{parent.inputs.environment}}
+      input_csv: ${{parent.inputs.input_csv}}
+      separator: ${{parent.inputs.separator}}
+    outputs:
+      transformed_data:
+  set_header_job:
+    type: command
+    component: file:../component/set_header.yaml
+    inputs:
+      marketing_csv: ${{parent.jobs.input_job.outputs.transformed_data}}
+    outputs:
+      transformed_data:
+  format_job:
+    type: command
+    component: file:../component/format.yaml
+    inputs:
+      marketing_csv: ${{parent.jobs.set_header_job.outputs.transformed_data}}
+      replacements: ${{parent.inputs.replacements}}
+    outputs:
+      transformed_data:
+  select_nonlabel_job:
+    type: command
+    component: file:../component/select_columns.yaml
+    inputs:
+      marketing_csv: ${{parent.jobs.format_job.outputs.transformed_data}}
+      columns: ${{parent.inputs.label}}
+      take_complement: true
+    outputs:
+      transformed_data:
+  select_unwanted_job:
+    type: command
+    component: file:../component/select_columns.yaml
+    inputs:
+      marketing_csv: ${{parent.jobs.select_nonlabel_job.outputs.transformed_data}}
+      columns: ${{parent.inputs.unwanted}}
+      take_complement: false
+    outputs:
+      transformed_data:
+  select_features_job:
+    type: command
+    component: file:../component/select_columns.yaml
+    inputs:
+      marketing_csv: ${{parent.jobs.select_nonlabel_job.outputs.transformed_data}}
+      columns: ${{parent.inputs.unwanted}}
+      take_complement: true
+    outputs:
+      transformed_data:
+  select_label_job:
+    type: command
+    component: file:../component/select_columns.yaml
+    inputs:
+      marketing_csv: ${{parent.jobs.format_job.outputs.transformed_data}}
+      columns: ${{parent.inputs.label}}
+      take_complement: false
+    outputs:
+      transformed_data:
+  package_job:
+    type: command
+    component: file:../component/package_files.yaml
+    inputs:
+      features_csv: ${{parent.jobs.select_features_job.outputs.transformed_data}}
+      label_csv: ${{parent.jobs.select_label_job.outputs.transformed_data}}
+      unwanted_csv: ${{parent.jobs.select_unwanted_job.outputs.transformed_data}}
+    outputs:
+      transformed_data:
+      metrics_out:
+  split_dataset_job:
+    type: command
+    component: file:../component/split_dataset.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.package_job.outputs.transformed_data}}
+      metrics_in: ${{parent.jobs.package_job.outputs.metrics_out}}
+    outputs:
+      transformed_data:
+      metrics_out:
+  downsample_job:
+    type: command
+    component: file:../component/downsample.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.split_dataset_job.outputs.transformed_data}}
+      enable: ${{parent.inputs.downsample_enable}}
+      ratio: ${{parent.inputs.downsample_ratio}}
+    outputs:
+      transformed_data:
+      metrics_out:
+  dfs_job:
+    type: command
+    component: file:../component/dfs.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.downsample_job.outputs.transformed_data}}
+      metrics_in: ${{parent.jobs.downsample_job.outputs.metrics_out}}
+    outputs:
+      transformed_data:
+      metrics_out:
+  stats_job:
+    type: command
+    component: file:../component/stats.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.dfs_job.outputs.transformed_data}}
+      metrics_in: ${{parent.jobs.dfs_job.outputs.metrics_out}}
+    outputs:
+      transformed_data:
+      metrics_out:
+  impute_job:
+    type: command
+    component: file:../component/impute.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.stats_job.outputs.transformed_data}}
+      metrics_in: ${{parent.jobs.stats_job.outputs.metrics_out}}
+    outputs:
+      transformed_data:
+      metrics_out:
+  outliers_job:
+    type: command
+    component: file:../component/outliers.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.impute_job.outputs.transformed_data}}
+      metrics_in: ${{parent.jobs.impute_job.outputs.metrics_out}}
+    outputs:
+      transformed_data:
+      metrics_out:
+  balancer_job:
+    type: command
+    component: file:../component/balancer.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.outliers_job.outputs.transformed_data}}
+      metrics_in: ${{parent.jobs.outliers_job.outputs.metrics_out}}
+    outputs:
+      transformed_data:
+      metrics_out:
+  register_dataset_job:
+    type: command
+    component: file:../component/register_dataset.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.balancer_job.outputs.transformed_data}}
+  log_metrics_job:
+    type: command
+    component: file:../component/log_metrics.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.balancer_job.outputs.transformed_data}}
+      destination_folder: runinfo
+    outputs:
+      transformed_data:

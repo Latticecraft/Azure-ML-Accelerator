@@ -1,0 +1,27 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+inputs:
+  runinfo:
+    type: uri_folder
+    path: wasbs://output@sanmlsvcblob.blob.core.windows.net/runinfo
+    mode: rw_mount
+  trainlog:
+    type: uri_folder
+    path: wasbs://output@sanmlsvcblob.blob.core.windows.net/trainlog
+    mode: rw_mount
+display_name: compactify
+experiment_name: compactify
+jobs:
+  compactify_job:
+    display_name: compactify
+    command: >-
+      python compactify.py
+      --runinfo ${{inputs.runinfo}}
+      --trainlog ${{inputs.trainlog}}
+    code: ../compactify
+    inputs:
+      runinfo: ${{parent.inputs.runinfo}}
+      trainlog: ${{parent.inputs.trainlog}}
+    environment:
+      image: b0aba260969b417d890158a6301346c4.azurecr.io/azureml/azureml_7c1b6eab580f5c390225084b375ad7b6
+    compute: azureml:cpu-cluster

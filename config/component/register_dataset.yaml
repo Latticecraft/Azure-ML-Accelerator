@@ -1,0 +1,13 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: register_dataset
+display_name: register_dataset
+command: >-
+  python register_dataset.py
+  --datasets-pkl ${{inputs.datasets_pkl}}
+code: ../../src/pipeline/features
+environment: azureml:ltcftenv@latest
+inputs:
+  datasets_pkl:
+    type: path

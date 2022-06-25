@@ -1,0 +1,23 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: downsample
+display_name: downsample
+command: >-
+  python downsample.py
+  --datasets-pkl ${{inputs.datasets_pkl}}
+  --enable ${{inputs.enable}}
+  --ratio ${{inputs.ratio}}
+  --transformed_data ${{outputs.transformed_data}}
+code: ../../src/pipeline/features
+environment: azureml:ltcftenv@latest
+inputs:
+  datasets_pkl:
+    type: path
+  enable:
+    type: boolean
+  ratio:
+    type: number
+outputs:
+  transformed_data:
+    type: path

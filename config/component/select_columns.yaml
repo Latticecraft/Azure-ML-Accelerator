@@ -1,0 +1,23 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: select_columns
+display_name: select columns
+command: >-
+  python select_columns.py
+  --marketing-csv ${{inputs.marketing_csv}}/datasets.pkl
+  --transformed_data ${{outputs.transformed_data}}
+  --columns ${{inputs.columns}}
+  --take_complement ${{inputs.take_complement}}
+code: ../../src/pipeline/features
+environment: azureml:ltcftenv@latest
+inputs:
+  marketing_csv:
+    type: path
+  columns:
+    type: string
+  take_complement:
+    type: boolean
+outputs:
+  transformed_data:
+    type: path

@@ -1,0 +1,18 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: set_header
+display_name: set header
+command: >-
+  python set_header.py
+  --marketing-csv ${{inputs.marketing_csv}}/transformed.csv
+  --transformed_data ${{outputs.transformed_data}}
+code: ../../src/pipeline/features
+environment: azureml:ltcftenv@latest
+inputs:
+  marketing_csv:
+    type: path
+outputs:
+  transformed_data:
+    type: path
+

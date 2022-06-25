@@ -1,0 +1,26 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: roc
+display_name: roc
+command: >-
+  python roc.py
+  --datasets-pkl ${{inputs.datasets_pkl}}
+  --model ${{inputs.model}}
+  --transformed-data ${{outputs.transformed_data}}
+  --metrics-in ${{inputs.metrics_in}}
+  --metrics-out ${{outputs.metrics_out}}
+code: ../model
+environment: azureml:ltcftenv@latest
+inputs:
+  datasets_pkl:
+    type: path
+  model:
+    type: path
+  metrics_in:
+    type: path
+outputs:
+  transformed_data:
+    type: path
+  metrics_out:
+    type: path

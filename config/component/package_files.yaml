@@ -1,0 +1,23 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: package_files
+display_name: package_files
+command: >-
+  python package_files.py
+  --features-csv ${{inputs.features_csv}}/datasets.pkl
+  --label-csv ${{inputs.label_csv}}/datasets.pkl
+  --unwanted-csv ${{inputs.unwanted_csv}}/datasets.pkl
+  --transformed_data ${{outputs.transformed_data}}
+code: ../../src/pipeline/features
+environment: azureml:ltcftenv@latest
+inputs:
+  features_csv:
+    type: path
+  label_csv:
+    type: path
+  unwanted_csv:
+    type: path
+outputs:
+  transformed_data:
+    type: path
