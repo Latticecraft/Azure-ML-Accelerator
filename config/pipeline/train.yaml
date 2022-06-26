@@ -81,6 +81,15 @@ jobs:
     component: file:../component/register_model.yaml
     inputs:
       datasets_pkl: ${{parent.jobs.calibrate_job.outputs.transformed_data}}
+    outputs:
+      transformed_data:
+  web_hook_job:
+    type: command
+    component: file:../component/web_hook.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.register_model_job.outputs.transformed_data}}
+      url: ${{parent.inputs.web_hook}}
+      next_pipeline: ${{parent.inputs.next_pipeline}}
   log_metrics_job:
     type: command
     component: file:../component/log_metrics.yaml

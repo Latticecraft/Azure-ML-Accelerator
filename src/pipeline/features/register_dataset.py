@@ -5,6 +5,7 @@ import mlflow
 
 from azureml.core import Run, Datastore, Dataset
 from azureml.data.datapath import DataPath
+from distutils.dir_util import copy_tree
 from pathlib import Path
 
 
@@ -17,6 +18,8 @@ def main(ctx):
     # write data out
     with open('outputs/datasets.pkl', 'wb') as f:
         pickle.dump(dict_files, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    copy_tree('outputs', args.transformed_data)
 
     # register dataset
     datastore = Datastore.get(ctx['run'].experiment.workspace, 'output')
@@ -45,6 +48,7 @@ def parse_args():
 
     # add arguments
     parser.add_argument("--datasets-pkl", type=str, default='data')
+    parser.add_argument("--transformed-data", type=str, default='data')
 
     # parse args
     args = parser.parse_args()

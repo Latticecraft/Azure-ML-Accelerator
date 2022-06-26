@@ -20,6 +20,8 @@ inputs:
   replacements: placeholder
   downsample_enable: False
   downsample_ratio: 0.1
+  web_hook: placeholder
+  next_pipeline: 0
 experiment_name: placeholder
 compute: azureml:cpu-cluster
 jobs:
@@ -162,6 +164,15 @@ jobs:
     component: file:../component/register_dataset.yaml
     inputs:
       datasets_pkl: ${{parent.jobs.balancer_job.outputs.transformed_data}}
+    outputs:
+      transformed_data:
+  web_hook_job:
+    type: command
+    component: file:../component/web_hook.yaml
+    inputs:
+      datasets_pkl: ${{parent.jobs.register_dataset_job.outputs.transformed_data}}
+      url: ${{parent.inputs.web_hook}}
+      next_pipeline: ${{parent.inputs.next_pipeline}}
   log_metrics_job:
     type: command
     component: file:../component/log_metrics.yaml
@@ -170,3 +181,4 @@ jobs:
       destination_folder: runinfo
     outputs:
       transformed_data:
+  
