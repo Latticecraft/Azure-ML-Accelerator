@@ -17,7 +17,7 @@ def main(ctx):
     print(df.head())
 
     # remove spaces from header
-    if ctx['args'].replacements != 'placeholder':
+    if len(ctx['args'].replacements) > 0 and ctx['args'].replacements != 'None':
         replacements = json.loads(urllib.parse.unquote(ctx['args'].replacements))
         df = df.replace(replacements)
 

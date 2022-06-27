@@ -11,7 +11,7 @@ from azureml.core.run import Run
 from azureml.interpret import ExplanationClient
 from interpret.ext.blackbox import TabularExplainer
 from pathlib import Path
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, mean_squared_error
 
 
 def main(ctx):
@@ -19,33 +19,68 @@ def main(ctx):
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as handle:
         dict_files = pickle.load(handle)
 
-    X_train = dict_files[f'X_train_{args.imputer}_{args.balancer}']
-    y_train = dict_files[f'y_train_{args.imputer}_{args.balancer}']
+    print(f'dict_files.keys(): {dict_files.keys()}')
+
+    if ctx['type'] != 'Regression':
+        X_train = dict_files[f'X_train_{args.imputer}_{args.balancer}']
+        y_train = dict_files[f'y_train_{args.imputer}_{args.balancer}']
+    else:
+        X_train = dict_files[f'X_train_{args.imputer}']
+        y_train = dict_files[f'y_train_{args.imputer}']
+
     X_valid = dict_files[f'X_valid_{args.imputer}']
     y_valid = dict_files[f'y_valid_{args.imputer}']
     X_test = dict_files[f'X_test_{args.imputer}']
     y_test = dict_files[f'y_test_{args.imputer}']
     
     # train model
-    clf = lgb.LGBMClassifier(num_leaves=int(args.num_leaves), 
-                        max_depth=int(args.max_depth), 
-                        colsample_bytree=args.colsample_bytree,
-                        subsample=args.subsample,
-                        learning_rate=args.learning_rate,
-                        n_estimators=1000,
-                        n_jobs=4,
-                        random_state=314,
-                        force_row_wise=True,
-                        verbose=2)
+    if ctx['type'] != 'Regression':
+        clf = lgb.LGBMClassifier(num_leaves=int(args.num_leaves), 
+                            max_depth=int(args.max_depth), 
+                            colsample_bytree=args.colsample_bytree,
+                            subsample=args.subsample,
+                            learning_rate=args.learning_rate,
+                            n_estimators=1000,
+                            n_jobs=4,
+                            random_state=314,
+                            force_row_wise=True,
+                            verbose=2)
 
-    clf.fit(X_train, y_train[args.label].ravel(),
-        eval_set=[(X_valid, y_valid[args.label].ravel())],
-        eval_metric='logloss',
-        callbacks=[lgb.early_stopping(10)])
+        clf.fit(X_train, y_train[args.label].ravel(),
+            eval_set=[(X_valid, y_valid[args.label].ravel())],
+            eval_metric='logloss',
+            callbacks=[lgb.early_stopping(10)])
 
-    # before calibration
-    yhat_proba = [x[1] for x in clf.predict_proba(X_test)]
-    yhat = [1 if x >= 0.5 else 0 for x in yhat_proba]
+        yhat_proba = [x[1] for x in clf.predict_proba(X_test)]
+        yhat = [1 if x >= 0.5 else 0 for x in yhat_proba]
+
+        # log metrics
+        report = classification_report(y_test[args.label].ravel(), yhat, output_dict=True)
+        for k1,v1 in report.items():
+            if isinstance(v1, dict):
+                for k2,v2 in v1.items():
+                    mlflow.log_metric('{}_{}'.format(k1,k2).replace(' ', '-'), v2)
+    else:
+        clf = lgb.LGBMRegressor(num_leaves=int(args.num_leaves), 
+                            max_depth=int(args.max_depth), 
+                            colsample_bytree=args.colsample_bytree,
+                            subsample=args.subsample,
+                            learning_rate=args.learning_rate,
+                            n_estimators=1000,
+                            n_jobs=4,
+                            random_state=314,
+                            force_row_wise=True,
+                            verbose=2)
+
+        clf.fit(X_train, y_train[args.label].ravel(),
+            eval_set=[(X_valid, y_valid[args.label].ravel())],
+            eval_metric='l2',
+            callbacks=[lgb.early_stopping(10)])
+
+        yhat = [x for x in clf.predict(X_test)]
+
+        rmse = mean_squared_error(y_test[args.label].ravel(), yhat, squared=False)
+        mlflow.log_metric('normalized_root_mean_squared_error', rmse)
 
     # explanations
     client = ExplanationClient.from_run(ctx['run'])
@@ -53,13 +88,8 @@ def main(ctx):
     global_explanation = explainer.explain_global(X_test)
     client.upload_model_explanation(global_explanation, comment='global explanation: all features')
 
-    # log metrics
-    report = classification_report(y_test[args.label].ravel(), yhat, output_dict=True)
-    for k1,v1 in report.items():
-        if isinstance(v1, dict):
-            for k2,v2 in v1.items():
-                mlflow.log_metric('{}_{}'.format(k1,k2), v2)
-
+    
+    # log important features
     dict_features = { f'feature_rank_{i}': v for i,v in enumerate(global_explanation.get_ranked_global_names()) if i < 20 }
     with open('outputs/features_ranked.json', 'w') as f:
         json.dump(dict_features, f)
@@ -96,7 +126,8 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project']
+        'project': tags['project'],
+        'type': tags['type']
     }
 
 

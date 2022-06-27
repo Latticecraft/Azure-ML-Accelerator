@@ -26,25 +26,29 @@ def main(ctx):
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:
         dict_files = pickle.load(f)
 
-    # after calibration
-    yhat_proba = [x[1] for x in model.predict_proba(dict_files['X_test'])]
-    yhat = [1 if x >= 0.5 else 0 for x in yhat_proba]
+    if ctx['type'] != 'Regression':
+        # brier score before calibration
+        yhat_proba = [x[1] for x in model.predict_proba(dict_files['X_test'])]
+        yhat = [1 if x >= 0.5 else 0 for x in yhat_proba]
 
-    brier_score_before = calc_reliability(dict_files['y_test'], yhat, yhat_proba, 'before')
+        brier_score_before = calc_reliability(dict_files['y_test'], yhat, yhat_proba, 'before')
 
-    # calibrate probabilities
-    calib_clf = CalibratedClassifierCV(model, method='isotonic', cv='prefit') 
-    calib_clf.fit(dict_files['X_valid'], dict_files['y_valid'][args.label].ravel()) 
+        # calibrate probabilities
+        calib_clf = CalibratedClassifierCV(model, method='isotonic', cv='prefit') 
+        calib_clf.fit(dict_files['X_valid'], dict_files['y_valid'][args.label].ravel()) 
 
-    # after calibration
-    yhat_proba = [x[1] for x in calib_clf.predict_proba(dict_files['X_test'])]
-    yhat = [1 if x >= 0.5 else 0 for x in yhat_proba]
+        #  brier score after calibration
+        yhat_proba = [x[1] for x in calib_clf.predict_proba(dict_files['X_test'])]
+        yhat = [1 if x >= 0.5 else 0 for x in yhat_proba]
 
-    brier_score_after = calc_reliability(dict_files['y_test'], yhat, yhat_proba, 'after')
+        brier_score_after = calc_reliability(dict_files['y_test'], yhat, yhat_proba, 'after')
 
-    if brier_score_after < brier_score_before:
-        print('Brier score improves with calibration, will use CalibratedClassifierCV')
-        model = calib_clf
+        if brier_score_after < brier_score_before:
+            print('Brier score improves with calibration, will use CalibratedClassifierCV')
+            model = calib_clf
+
+    else:
+        print('Regression model; nothing to do')
 
     joblib.dump(model, 'outputs/model.pkl')
     shutil.copyfile('outputs/model.pkl', Path(ctx['args'].transformed_data)/'model.pkl')
@@ -59,7 +63,8 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project']
+        'project': tags['project'],
+        'type': tags['type']
     }
 
 

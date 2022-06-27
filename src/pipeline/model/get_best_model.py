@@ -30,10 +30,13 @@ def main(ctx):
     dict_new = {
         'sweep_get_best_model_runid': best_runid,
         'sweep_run_ids': list(metrics.keys()),
-        'sweep_weighted avg_f1-score': [metrics[k][x] for k in metrics.keys() for x in metrics[k] if x == 'weighted avg_f1-score'],
+        'sweep_primary_metric': [metrics[k][x] for k in metrics.keys() for x in metrics[k] if x == ctx['primary_metric']],
         'sweep_balancer': [json.loads(tags[k])['balancer'] for k in metrics.keys() if k in tags.keys()],
         'sweep_imputer': [json.loads(tags[k])['imputer'] for k in metrics.keys() if k in tags.keys()]
     }
+
+    # log best run metric to parent pipeline
+    #ctx['run'].parent.log_metric('best_weighted avg_f1-score', dict_new['sweep_weighted avg_f1-score'])
     
     # get metrics of best run
     for k in metrics[best_runid].keys():
@@ -64,7 +67,9 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project']
+        'project': tags['project'],
+        'type': tags['type'],
+        'primary_metric': tags['primary_metric']
     }
 
 

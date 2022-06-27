@@ -11,7 +11,7 @@ from distutils.dir_util import copy_tree
 def main(ctx):
     Model.register(model_path=ctx['args'].datasets_pkl + '/model.pkl',
                     model_name=ctx['project'],
-                    tags={'area': "response", 'type': "classification"},
+                    tags={'area': "response", 'type': ctx['type']},
                     description="LightGBM model to predict response",
                     workspace=ctx['run'].experiment.workspace)
 
@@ -27,7 +27,8 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project']
+        'project': tags['project'],
+        'type': tags['type']
     }
 
 

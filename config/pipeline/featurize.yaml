@@ -2,6 +2,7 @@ $schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
 type: pipeline
 tags:
   project:
+  type:
 inputs:
   input_csv:
     type: uri_file
@@ -17,10 +18,10 @@ inputs:
   separator: comma
   label: placeholder
   unwanted: placeholder
-  replacements: placeholder
+  replacements: None
   downsample_enable: False
   downsample_ratio: 0.1
-  web_hook: placeholder
+  web_hook: None
   next_pipeline: 0
 experiment_name: placeholder
 compute: azureml:cpu-cluster

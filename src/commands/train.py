@@ -3,7 +3,7 @@ import subprocess
 
 
 def main(args):
-    command = f'az ml job create --file {os.path.dirname(os.path.realpath(__file__))}/../../config/pipeline/train.yaml --web --set tags.project={args.project} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+    command = f'az ml job create --file {os.path.dirname(os.path.realpath(__file__))}/../../config/pipeline/train.yaml --web --set tags.project={args.project} --set tags.type={args.type} --set tags.primary_metric={args.primary_metric} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
     print(command)
     
     list_files = subprocess.run(command.split(' '))
@@ -16,6 +16,8 @@ def parse_args():
 
     # add arguments
     parser.add_argument('--project', type=str, required=True)
+    parser.add_argument('--type', type=str, required=False)
+    parser.add_argument('--primary-metric', type=str, required=False)
     parser.add_argument('--label', type=str, required=True)
     parser.add_argument('--web-hook', type=str, required=False)
     parser.add_argument('--next-pipeline', type=int, required=False)

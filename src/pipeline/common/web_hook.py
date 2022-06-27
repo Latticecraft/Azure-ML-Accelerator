@@ -11,7 +11,7 @@ from azureml.data.datapath import DataPath
 
 
 def main(ctx):
-    if ctx['args'].url is not None:
+    if len(ctx['args'].url) > 0 and ctx['args'].url != 'None':
         r = requests.post(f'{ctx["args"].url}&definitionId={ctx["args"].next_pipeline}', json={})
         if r.status_code != 200:
             raise ValueError('Unable to trigger next DevOps pipeline')
