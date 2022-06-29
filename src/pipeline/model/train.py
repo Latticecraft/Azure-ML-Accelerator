@@ -34,6 +34,7 @@ def main(ctx):
     y_test = dict_files[f'y_test_{args.imputer}']
     
     # train model
+    metrics = {}
     if ctx['type'] != 'Regression':
         clf = lgb.LGBMClassifier(num_leaves=int(args.num_leaves), 
                             max_depth=int(args.max_depth), 
@@ -59,6 +60,7 @@ def main(ctx):
         for k1,v1 in report.items():
             if isinstance(v1, dict):
                 for k2,v2 in v1.items():
+                    metrics['{}_{}'.format(k1,k2).replace(' ', '-')] = v2
                     mlflow.log_metric('{}_{}'.format(k1,k2).replace(' ', '-'), v2)
     else:
         clf = lgb.LGBMRegressor(num_leaves=int(args.num_leaves), 
@@ -80,7 +82,8 @@ def main(ctx):
         yhat = [x for x in clf.predict(X_test)]
 
         rmse = mean_squared_error(y_test[args.label].ravel(), yhat, squared=False)
-        mlflow.log_metric('normalized_root_mean_squared_error', rmse)
+        metrics['root_mean_squared_error'] = rmse
+        mlflow.log_metric('root_mean_squared_error', rmse)
 
     # explanations
     client = ExplanationClient.from_run(ctx['run'])
@@ -112,7 +115,7 @@ def main(ctx):
         pickle.dump(dict_files, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     with open(Path(ctx['args'].train_artifacts) / 'best_run.json', 'w') as f:
-        json.dump({'runId': ctx['run'].id, 'sweepId': ctx['run'].parent.id}, f)
+        json.dump({'runId': ctx['run'].id, 'sweepId': ctx['run'].parent.id, 'best_score': metrics[ctx['primary_metric']], 'label': ctx['args'].label}, f)
 
     mlflow.end_run()
 
@@ -127,7 +130,8 @@ def start(args):
         'args': args,
         'run': run,
         'project': tags['project'],
-        'type': tags['type']
+        'type': tags['type'],
+        'primary_metric': tags['primary_metric']
     }
 
 

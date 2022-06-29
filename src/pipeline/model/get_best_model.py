@@ -9,11 +9,13 @@ from azureml.core import Run
 
 def main(ctx):
     # get run ids of sweep job and best run
-    best_runid, sweepid = '', ''
+    best_runid, best_score, sweepid = '', 0, ''
     with open(Path(ctx['args'].train_artifacts)/'best_run.json', 'r') as f:
         data = json.load(f)
         best_runid = data['runId']
+        best_score = data['best_score']
         sweepid = data['sweepId']
+        label = data['label']
     
     # download best run artifacts to outputs
     best_run = Run.get(workspace=ctx['run'].experiment.workspace, run_id=best_runid)
@@ -36,7 +38,7 @@ def main(ctx):
     }
 
     # log best run metric to parent pipeline
-    #ctx['run'].parent.log_metric('best_weighted avg_f1-score', dict_new['sweep_weighted avg_f1-score'])
+    ctx['run'].parent.set_tags({'best_score': best_score, 'label': label})
     
     # get metrics of best run
     for k in metrics[best_runid].keys():
