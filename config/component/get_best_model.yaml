@@ -9,7 +9,7 @@ command: >-
   --sweep-name ${{inputs.sweep_name}}
   --train-artifacts ${{inputs.train_artifacts}} 
   --transformed-data ${{outputs.transformed_data}}
-code: ../../src/pipeline/model
+code: ../../src/pipeline/model/get_best_model
 environment: azureml:ltcftenv@latest
 inputs:
   sweep_name:

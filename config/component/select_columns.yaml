@@ -9,7 +9,7 @@ command: >-
   --transformed_data ${{outputs.transformed_data}}
   --columns ${{inputs.columns}}
   --take_complement ${{inputs.take_complement}}
-code: ../../src/pipeline/features
+code: ../../src/pipeline/features/select_columns
 environment: azureml:ltcftenv@latest
 inputs:
   marketing_csv:

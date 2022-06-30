@@ -8,7 +8,7 @@ command: >-
   --datasets-pkl ${{inputs.datasets_pkl}}
   --url ${{inputs.url}}
   --next-pipeline ${{inputs.next_pipeline}}
-code: ../../src/pipeline/common
+code: ../../src/pipeline/common/web_hook
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:

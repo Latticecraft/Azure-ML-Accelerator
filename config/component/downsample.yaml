@@ -9,7 +9,7 @@ command: >-
   --enable ${{inputs.enable}}
   --ratio ${{inputs.ratio}}
   --transformed_data ${{outputs.transformed_data}}
-code: ../../src/pipeline/features
+code: ../../src/pipeline/features/downsample
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:

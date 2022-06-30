@@ -7,7 +7,7 @@ command: >-
   python outliers.py
   --datasets-pkl ${{inputs.datasets_pkl}}
   --transformed-data ${{outputs.transformed_data}}
-code: ../../src/pipeline/features
+code: ../../src/pipeline/features/outliers
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:

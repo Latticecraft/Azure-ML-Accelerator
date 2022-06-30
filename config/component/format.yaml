@@ -8,7 +8,7 @@ command: >-
   --marketing-csv ${{inputs.marketing_csv}}/datasets.pkl
   --replacements ${{inputs.replacements}}
   --transformed_data ${{outputs.transformed_data}}
-code: ../../src/pipeline/features
+code: ../../src/pipeline/features/format
 environment: azureml:ltcftenv@latest
 inputs:
   marketing_csv:
