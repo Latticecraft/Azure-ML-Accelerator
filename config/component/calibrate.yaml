@@ -8,7 +8,7 @@ command: >-
   --datasets-pkl ${{inputs.datasets_pkl}}
   --label ${{inputs.label}}
   --transformed_data ${{outputs.transformed_data}}
-code: ../../src/pipeline/model
+code: ../../src/pipeline/model/calibrate
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:

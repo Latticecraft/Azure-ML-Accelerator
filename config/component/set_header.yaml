@@ -7,7 +7,7 @@ command: >-
   python set_header.py
   --marketing-csv ${{inputs.marketing_csv}}/transformed.csv
   --transformed_data ${{outputs.transformed_data}}
-code: ../../src/pipeline/features
+code: ../../src/pipeline/features/set_header
 environment: azureml:ltcftenv@latest
 inputs:
   marketing_csv:

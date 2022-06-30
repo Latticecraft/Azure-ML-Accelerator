@@ -8,7 +8,7 @@ command: >-
   --datasets-pkl ${{inputs.datasets_pkl}}
   --destination-folder ${{inputs.destination_folder}}
   --transformed-data ${{outputs.transformed_data}}
-code: ../../src/pipeline/common
+code: ../../src/pipeline/common/log_metrics
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:

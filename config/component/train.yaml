@@ -16,7 +16,7 @@ command: >-
     --subsample ${{inputs.subsample}}
     --learning-rate ${{inputs.learning_rate}}
     --train-artifacts ${{outputs.train_artifacts}}
-code: ../../src/pipeline/model
+code: ../../src/pipeline/model/train
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:

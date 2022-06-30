@@ -7,7 +7,7 @@ command: >-
   python balancer.py
   --datasets-pkl ${{inputs.datasets_pkl}}
   --transformed_data ${{outputs.transformed_data}}
-code: ../../src/pipeline/features
+code: ../../src/pipeline/features/balancer
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:

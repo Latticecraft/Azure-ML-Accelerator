@@ -7,7 +7,7 @@ command: >-
   python register_model.py
   --datasets-pkl ${{inputs.datasets_pkl}}
   --transformed-data ${{outputs.transformed_data}}
-code: ../../src/pipeline/model
+code: ../../src/pipeline/model/register_model
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:
