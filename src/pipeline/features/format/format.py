@@ -6,6 +6,7 @@ import mlflow
 
 from azureml.core import Run
 from pathlib import Path
+from sklearn.preprocessing import LabelEncoder
 
 
 # define functions
@@ -13,15 +14,27 @@ def main(ctx):
     # read in data
     df = pd.read_pickle(ctx['args'].marketing_csv)
 
-    # print first 5 lines
-    print(df.head())
-
-    # remove spaces from header
-    if len(ctx['args'].replacements) > 0 and ctx['args'].replacements != 'None':
+    # perform any replacements specified
+    if ctx['args'].replacements != 'None':
         replacements = json.loads(urllib.parse.unquote(ctx['args'].replacements))
         df = df.replace(replacements)
 
+    if ctx['args'].datatypes != 'None':
+        datatypes = json.loads(urllib.parse.unquote(ctx['args'].datatypes))
+        for k,v in datatypes.items():
+            df[k] = df[k].astype(v)
+
+    # remove spaces from header
     df = df.replace(',', ' ', regex=True)
+
+    # encode label
+    le = LabelEncoder()
+    df[ctx['args'].label] = le.fit_transform(df[ctx['args'].label])
+
+    # print debug
+    print(df.dtypes)
+    if len(df) > 5:
+        [print(df.iloc[x]) for x in [0,1,2,3,4]]
 
     # save data to outputs
     df.to_pickle((Path('outputs') / 'datasets.pkl'))
@@ -46,9 +59,11 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument("--marketing-csv", type=str, default='data/transformed.csv')
-    parser.add_argument('--replacements', type=str)
-    parser.add_argument("--transformed_data", type=str, default='data')
+    parser.add_argument('--marketing-csv', type=str, default='data/transformed.csv')
+    parser.add_argument('--label', type=str, default='None')
+    parser.add_argument('--replacements', type=str, default='None')
+    parser.add_argument('--datatypes', type=str, default='None')
+    parser.add_argument('--transformed_data', type=str, default='data')
 
     # parse args
     args = parser.parse_args()
