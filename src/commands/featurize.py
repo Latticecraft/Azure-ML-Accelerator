@@ -4,6 +4,8 @@ import tempfile
 import yaml
 import urllib.parse
 
+from pathlib import PurePath
+
 
 def main(args):
     template = {
@@ -256,7 +258,7 @@ def main(args):
     }
 
     temp_name = next(tempfile._get_candidate_names())
-    temp_name = f'{os.path.dirname(os.path.realpath(__file__))}/{temp_name}.yaml'
+    temp_name = PurePath(os.path.dirname(os.path.realpath(__file__)), f'{temp_name}.yaml')
     print(f'temp filename: {temp_name}')
 
     with open(temp_name, 'w') as f:
