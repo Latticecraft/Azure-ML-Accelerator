@@ -255,21 +255,21 @@ def main(args):
         }
     }
 
-    tmp = f'{tempfile.NamedTemporaryFile().name}.yaml'.split('/')[-1]
-    tmp = f'{os.path.dirname(os.path.realpath(__file__))}/{tmp}'
-    print(f'temp filename: {tmp}')
+    temp_name = next(tempfile._get_candidate_names())
+    temp_name = f'{os.path.dirname(os.path.realpath(__file__))}/{temp_name}.yaml'
+    print(f'temp filename: {temp_name}')
 
-    with open(tmp, 'w') as f:
+    with open(temp_name, 'w') as f:
         yaml.SafeDumper.ignore_aliases = lambda *args: True
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
 
-    command = f'az ml job create --file {tmp} --web --set tags.project={args.project} --set tags.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set inputs.runinfo.path=azureml://datastores/output/paths/{args.project}/runinfo --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+    command = f'az ml job create --file {temp_name} --web --set tags.project={args.project} --set tags.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set inputs.runinfo.path=azureml://datastores/output/paths/{args.project}/runinfo --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
 
     list_files = subprocess.run(command.split(' '))
     print('The exit code was: %d' % list_files.returncode)
 
     # remove temp file
-    os.remove(tmp)
+    os.remove(temp_name)
 
 
 def parse_args():
