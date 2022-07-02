@@ -1,8 +1,6 @@
 import os, argparse
 import subprocess
-import tempfile
 import yaml
-import urllib.parse
 
 from pathlib import PurePath
 
@@ -294,7 +292,6 @@ def parse_args():
     
     # parse args
     args = parser.parse_args()
-    args.replacements = urllib.parse.quote(args.replacements)
 
     # return args
     return args
