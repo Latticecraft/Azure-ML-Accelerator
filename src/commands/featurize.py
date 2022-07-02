@@ -290,7 +290,7 @@ def parse_args():
     
     # parse args
     args = parser.parse_args()
-    args['replacements'] = urllib.parse.quote(args['replacements'])
+    args.replacements = urllib.parse.quote(args.replacements)
 
     # return args
     return args
