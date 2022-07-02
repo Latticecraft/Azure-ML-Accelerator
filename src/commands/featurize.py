@@ -265,13 +265,14 @@ def main(args):
         yaml.SafeDumper.ignore_aliases = lambda *args: True
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
 
-    command = f'az ml job create --file {temp_name} --web --set tags.project={args.project} --set tags.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set inputs.runinfo.path=azureml://datastores/output/paths/{args.project}/runinfo --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+    if eval(args.run) == True:
+        command = f'az ml job create --file "{temp_name}" --web --set tags.project={args.project} --set tags.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set inputs.runinfo.path=azureml://datastores/output/paths/{args.project}/runinfo --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
 
-    list_files = subprocess.run(command.split(' '))
-    print('The exit code was: %d' % list_files.returncode)
+        list_files = subprocess.run(command.split(' '))
+        print('The exit code was: %d' % list_files.returncode)
 
-    # remove temp file
-    os.remove(temp_name)
+        # remove temp file
+        os.remove(temp_name)
 
 
 def parse_args():
@@ -279,6 +280,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
+    parser.add_argument('--run', type=str, required=False)
     parser.add_argument('--project', type=str, required=True)
     parser.add_argument('--type', type=str, required=False)
     parser.add_argument('--input', type=str, required=True)
