@@ -15,7 +15,8 @@ def main(ctx):
                         'label': ctx['args'].label, 
                         'type': ctx['type'],
                         'primary_metric': ctx['args'].primary_metric,
-                        'best_score': ctx['best_score']
+                        'best_score': ctx['best_score'],
+                        'source': ctx['source']
                     },
                     description='',
                     workspace=ctx['run'].experiment.workspace)
@@ -34,7 +35,8 @@ def start(args):
         'run': run,
         'project': tags['project'],
         'type': tags['type'],
-        'best_score': tags['best_score']
+        'best_score': tags['best_score'],
+        'source': tags['source']
     }
 
 
