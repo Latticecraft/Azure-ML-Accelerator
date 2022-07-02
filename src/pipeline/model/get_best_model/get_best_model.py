@@ -32,7 +32,7 @@ def main(ctx):
     dict_new = {
         'sweep_get_best_model_runid': best_runid,
         'sweep_run_ids': list(metrics.keys()),
-        'sweep_primary_metric': [metrics[k][x] for k in metrics.keys() for x in metrics[k] if x == ctx['primary_metric']],
+        'sweep_primary_metric': [metrics[k][x] for k in metrics.keys() for x in metrics[k] if x == ctx['args'].primary_metric],
         'sweep_balancer': [json.loads(tags[k])['balancer'] for k in metrics.keys() if k in tags.keys()],
         'sweep_imputer': [json.loads(tags[k])['imputer'] for k in metrics.keys() if k in tags.keys()]
     }
@@ -70,8 +70,7 @@ def start(args):
         'args': args,
         'run': run,
         'project': tags['project'],
-        'type': tags['type'],
-        'primary_metric': tags['primary_metric']
+        'type': tags['type']
     }
 
 
@@ -82,6 +81,7 @@ def parse_args():
     # add arguments
     parser.add_argument('--sweep-name', type=str, default='sweep-marketing')
     parser.add_argument('--train-artifacts', type=str, default='data')
+    parser.add_argument('--primary-metric', type=str, default='None')
     parser.add_argument("--transformed-data", type=str, help="Path of output data")
 
     # parse args

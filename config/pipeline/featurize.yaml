@@ -16,9 +16,10 @@ inputs:
     path: azureml://datastores/output/paths/placeholder
     mode: ro_mount
   separator: comma
-  label: placeholder
-  unwanted: placeholder
+  label: None
+  unwanted: None
   replacements: None
+  datatypes: None
   downsample_enable: False
   downsample_ratio: 0.1
   web_hook: None
@@ -47,7 +48,9 @@ jobs:
     component: file:../component/format.yaml
     inputs:
       marketing_csv: ${{parent.jobs.set_header_job.outputs.transformed_data}}
+      label: ${{parent.inputs.label}}
       replacements: ${{parent.inputs.replacements}}
+      datatypes: ${{parent.inputs.datatypes}}
     outputs:
       transformed_data:
   select_nonlabel_job:

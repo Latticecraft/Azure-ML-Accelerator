@@ -49,12 +49,7 @@ def main(ctx):
     feature_matrix_valid = feature_matrix_valid[list(feature_matrix_train.columns)]
     feature_matrix_test = feature_matrix_test[list(feature_matrix_train.columns)]
 
-    # convert booleans to 1/0
-    bool_cols = [x for x in feature_matrix_train.columns if 'bool' in feature_matrix_train[x].dtype.name]
-    feature_matrix_train[bool_cols] = feature_matrix_train[bool_cols].astype(int)
-    feature_matrix_valid[bool_cols] = feature_matrix_valid[bool_cols].astype(int)
-    feature_matrix_test[bool_cols] = feature_matrix_test[bool_cols].astype(int)
-
+    # add dictionary files
     dict_files['X_train'] = feature_matrix_train
     dict_files['X_valid'] = feature_matrix_valid
     dict_files['X_test'] = feature_matrix_test

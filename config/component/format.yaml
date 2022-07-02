@@ -6,14 +6,20 @@ display_name: format
 command: >-
   python format.py
   --marketing-csv ${{inputs.marketing_csv}}/datasets.pkl
+  --label ${{inputs.label}}
   --replacements ${{inputs.replacements}}
+  --datatypes ${{inputs.datatypes}}
   --transformed_data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/format
 environment: azureml:ltcftenv@latest
 inputs:
   marketing_csv:
     type: path
+  label:
+    type: string
   replacements:
+    type: string
+  datatypes:
     type: string
 outputs:
   transformed_data:

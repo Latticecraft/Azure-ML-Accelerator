@@ -13,7 +13,7 @@ def main(ctx):
     df = pd.read_pickle(ctx['args'].marketing_csv)
 
     # print first 5 lines
-    if len(ctx['args'].columns) > 0 and ctx['args'].columns != 'None':
+    if ctx['args'].columns != 'None':
         cols = args.columns.replace('%20',' ').split(',')
         if ctx['args'].take_complement == 'False':
             df = df[cols]

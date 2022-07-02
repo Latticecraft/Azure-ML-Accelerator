@@ -19,9 +19,11 @@ def main(ctx):
 
     df = pd.read_csv(ctx['args'].input_csv, sep=sep)
 
-    # print first 5 lines
+    # print env variables, first 5 rows and datatypes
     print( '\n'.join([f'{k}: {v}' for k, v in sorted(os.environ.items())]) )
-    print(df.head())
+    print(df.dtypes)
+    if len(df) > 5:
+        [print(df.iloc[x]) for x in [0,1,2,3,4]]
 
     # log metrics
     mlflow.log_metric('dataframe rows', len(df))

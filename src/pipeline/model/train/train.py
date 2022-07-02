@@ -115,7 +115,7 @@ def main(ctx):
         pickle.dump(dict_files, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     with open(Path(ctx['args'].train_artifacts) / 'best_run.json', 'w') as f:
-        json.dump({'runId': ctx['run'].id, 'sweepId': ctx['run'].parent.id, 'best_score': metrics[ctx['primary_metric']], 'label': ctx['args'].label}, f)
+        json.dump({'runId': ctx['run'].id, 'sweepId': ctx['run'].parent.id, 'best_score': metrics[ctx['args'].primary_metric], 'label': ctx['args'].label}, f)
 
     mlflow.end_run()
 
@@ -130,8 +130,7 @@ def start(args):
         'args': args,
         'run': run,
         'project': tags['project'],
-        'type': tags['type'],
-        'primary_metric': tags['primary_metric']
+        'type': tags['type']
     }
 
 
@@ -140,8 +139,9 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument('--label', type=str, default='label')
     parser.add_argument("--datasets-pkl", type=str, default='data')
+    parser.add_argument('--label', type=str, default='label')
+    parser.add_argument('--primary-metric', type=str, default='None')
     parser.add_argument('--imputer', type=str, default='knn')
     parser.add_argument('--balancer', type=str, default='smote')
     parser.add_argument('--num-leaves', type=float, default=5)
