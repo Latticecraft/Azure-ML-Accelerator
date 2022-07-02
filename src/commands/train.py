@@ -1,7 +1,8 @@
 import os, argparse
 import subprocess
-import tempfile
 import yaml
+
+from pathlib import PurePath
 
 
 def main(args):
@@ -142,21 +143,21 @@ def main(args):
         }
     }
 
-    tmp = f'{tempfile.NamedTemporaryFile().name}.yaml'.split('/')[-1]
-    tmp = f'{os.path.dirname(os.path.realpath(__file__))}/{tmp}'
-    print(f'temp filename: {tmp}')
+    filepath = PurePath(os.path.dirname(os.path.realpath(__file__)), '../../config/pipeline', args.filename)
+    print(f'pipeline yaml path: {filepath}')
 
-    with open(tmp, 'w') as f:
+    with open(filepath, 'w') as f:
         yaml.SafeDumper.ignore_aliases = lambda *args: True
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
     
-    command = f'az ml job create --file {tmp} --web --set tags.project={args.project} --set tags.type={args.type} --set tags.source={args.source} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
-    
-    list_files = subprocess.run(command.split(' '))
-    print('The exit code was: %d' % list_files.returncode)
+    if eval(args.run) == True:
+        command = f'az ml job create --file {filepath} --web --set tags.project={args.project} --set tags.type={args.type} --set tags.source={args.source} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        
+        list_files = subprocess.run(command.split(' '))
+        print('The exit code was: %d' % list_files.returncode)
 
-    # remove temp file
-    os.remove(tmp)
+        # remove temp file
+        os.remove(filepath)
 
 
 def parse_args():
@@ -164,6 +165,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
+    parser.add_argument('--filename', type=str, required=True)
+    parser.add_argument('--run', type=str, required=False)
     parser.add_argument('--project', type=str, required=True)
     parser.add_argument('--type', type=str, required=False)
     parser.add_argument('--primary-metric', type=str, required=False)
