@@ -150,13 +150,17 @@ def main(args):
     filepath = PurePath(os.path.dirname(os.path.realpath(__file__)), '../../config/pipeline', args.filename)
     print(f'pipeline yaml path: {filepath}')
 
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
     with open(filepath, 'w') as f:
         yaml.SafeDumper.ignore_aliases = lambda *args: True
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
     
     if eval(args.run) == True:
         command = f'az ml job create --file {filepath} --web --set tags.project={args.project} --set tags.type={args.type} --set tags.source={args.source} --set inputs.type={args.type} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
-        
+        print(f'command: {command}')
+
         list_files = subprocess.run(command.split(' '))
         print('The exit code was: %d' % list_files.returncode)
 
