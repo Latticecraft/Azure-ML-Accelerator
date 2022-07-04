@@ -1,6 +1,5 @@
 # imports
-import os
-import argparse
+import os, argparse
 import mlflow
 
 from azureml.core import Run
@@ -10,13 +9,13 @@ from distutils.dir_util import copy_tree
 
 def main(ctx):
     Model.register(model_path=ctx['args'].datasets_pkl + '/model.pkl',
-                    model_name=ctx['project'],
+                    model_name=ctx['tags']['project'],
                     tags={
-                        'label': ctx['args'].label, 
-                        'type': ctx['type'],
+                        'label': ctx['args'].label,
                         'primary_metric': ctx['args'].primary_metric,
-                        'best_score': ctx['best_score'],
-                        'source': ctx['source']
+                        'type': ctx['args'].type,
+                        'source': ctx['tags']['source'],
+                        'best_score': ctx['tags']['best_score']
                     },
                     description='',
                     workspace=ctx['run'].experiment.workspace)
@@ -33,10 +32,7 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project'],
-        'type': tags['type'],
-        'best_score': tags['best_score'],
-        'source': tags['source']
+        'tags': tags
     }
 
 
@@ -48,6 +44,7 @@ def parse_args():
     parser.add_argument("--datasets-pkl", type=str, default='data')
     parser.add_argument('--label', type=str, default='None')
     parser.add_argument('--primary-metric', type=str, default='None')
+    parser.add_argument('--type', type=str, default='None')
 
     # outputs
     parser.add_argument("--transformed-data", type=str, help="Path of output data")

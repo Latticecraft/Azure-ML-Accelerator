@@ -7,7 +7,7 @@ command: >-
   python web_hook.py
   --datasets-pkl ${{inputs.datasets_pkl}}
   --url ${{inputs.url}}
-  --next-pipeline ${{inputs.next_pipeline}}
+  --param1 ${{inputs.param1}}
 code: ../../src/pipeline/common/web_hook
 environment: azureml:ltcftenv@latest
 inputs:
@@ -15,5 +15,5 @@ inputs:
     type: path
   url:
     type: string
-  next_pipeline:
+  param1:
     type: integer

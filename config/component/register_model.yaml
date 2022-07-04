@@ -8,6 +8,7 @@ command: >-
   --datasets-pkl ${{inputs.datasets_pkl}}
   --label ${{inputs.label}}
   --primary-metric ${{inputs.primary_metric}}
+  --type ${{inputs.type}}
   --transformed-data ${{outputs.transformed_data}}
 code: ../../src/pipeline/model/register_model
 environment: azureml:ltcftenv@latest
@@ -17,6 +18,8 @@ inputs:
   label:
     type: string
   primary_metric:
+    type: string
+  type:
     type: string
 outputs:
   transformed_data:

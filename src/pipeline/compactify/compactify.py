@@ -1,14 +1,10 @@
 # imports
 import os
 import argparse
-import numpy as np
 import pandas as pd
 import glob
-import mlflow
 
 from pathlib import Path
-from azureml.core import Run, Workspace, Datastore, Dataset
-from azureml.data.datapath import DataPath
 
 
 # define functions

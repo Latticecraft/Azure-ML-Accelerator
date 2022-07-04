@@ -3,9 +3,8 @@ import pickle
 import mlflow
 
 from azureml.core import Run
-from pathlib import Path
+from distutils.dir_util import copy_tree
 from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTENC, ADASYN
-from shutil import copyfile
 
 
 # define functions
@@ -14,7 +13,7 @@ def main(ctx):
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:
         dict_files = pickle.load(f)
 
-    if ctx['type'] != 'Regression':
+    if ctx['args'].type != 'Regression':
         new_files = {}
         for key in dict_files.keys():
             if key.startswith('X_train'):
@@ -51,7 +50,7 @@ def main(ctx):
     with open('outputs/datasets.pkl', 'wb') as f:
         pickle.dump(new_files, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    copyfile('outputs/datasets.pkl', Path(ctx['args'].transformed_data)/'datasets.pkl')
+    copy_tree('outputs', args.transformed_data)
 
 
 def start(args):
@@ -63,8 +62,7 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project'],
-        'type': tags['type']
+        'tags': tags
     }
 
 
@@ -73,8 +71,9 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument("--datasets-pkl", type=str, default='data')
-    parser.add_argument("--transformed_data", type=str, help="Path of output data")
+    parser.add_argument('--datasets-pkl', type=str, default='data')
+    parser.add_argument('--type', type=str)
+    parser.add_argument('--transformed_data', type=str, help='Path of output data')
 
     # parse args
     args = parser.parse_args()

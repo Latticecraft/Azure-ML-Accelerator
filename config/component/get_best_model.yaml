@@ -8,6 +8,7 @@ command: >-
   python get_best_model.py
   --sweep-name ${{inputs.sweep_name}}
   --train-artifacts ${{inputs.train_artifacts}} 
+  --primary-metric ${{inputs.primary_metric}}
   --transformed-data ${{outputs.transformed_data}}
 code: ../../src/pipeline/model/get_best_model
 environment: azureml:ltcftenv@latest
@@ -16,6 +17,8 @@ inputs:
     type: string
   train_artifacts:
     type: path
+  primary_metric:
+    type: string
 outputs:
   transformed_data:
     type: path

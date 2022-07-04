@@ -23,6 +23,7 @@ def main(args):
             },
             'sweep_name': 'None',
             'label': 'None',
+            'type': 'None',
             'primary_metric': 'normalized_root_mean_squared_error'
         },
         'jobs': {
@@ -80,6 +81,7 @@ def main(args):
                 'inputs': {
                     'datasets_pkl': '${{parent.inputs.datasets_pkl}}',
                     'label': '${{parent.inputs.label}}',
+                    'type': '${{parent.inputs.type}}',
                     'primary_metric': '${{parent.inputs.primary_metric}}'
                 },
                 'outputs': {
@@ -91,7 +93,8 @@ def main(args):
                 'component': 'file:../../config/component/get_best_model.yaml',
                 'inputs': {
                     'sweep_name': '${{parent.inputs.sweep_name}}',
-                    'train_artifacts': '${{parent.jobs.sweep_job.outputs.train_artifacts}}'
+                    'train_artifacts': '${{parent.jobs.sweep_job.outputs.train_artifacts}}',
+                    'primary_metric': '${{parent.inputs.primary_metric}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -114,7 +117,8 @@ def main(args):
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.calibrate_job.outputs.transformed_data}}',
                     'label': '${{parent.inputs.label}}',
-                    'primary_metric': '${{parent.inputs.primary_metric}}'
+                    'primary_metric': '${{parent.inputs.primary_metric}}',
+                    'type': '${{parent.inputs.type}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -126,7 +130,7 @@ def main(args):
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.register_model_job.outputs.transformed_data}}',
                     'url': '${{parent.inputs.web_hook}}',
-                    'next_pipeline': '${{parent.inputs.next_pipeline}}'
+                    'param1': '${{parent.inputs.next_pipeline}}'
                 }
             },
             'log_metrics_job': {
@@ -151,7 +155,7 @@ def main(args):
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
     
     if eval(args.run) == True:
-        command = f'az ml job create --file {filepath} --web --set tags.project={args.project} --set tags.type={args.type} --set tags.source={args.source} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        command = f'az ml job create --file {filepath} --web --set tags.project={args.project} --set tags.type={args.type} --set tags.source={args.source} --set inputs.type={args.type} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
         
         list_files = subprocess.run(command.split(' '))
         print('The exit code was: %d' % list_files.returncode)

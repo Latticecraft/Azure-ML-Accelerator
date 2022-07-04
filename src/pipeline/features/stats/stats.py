@@ -5,8 +5,8 @@ import pandas as pd
 import mlflow
 
 from azureml.core import Run
-from pathlib import Path
-from shutil import copyfile
+from distutils.dir_util import copy_tree
+
 
 # define functions
 def main(ctx):
@@ -29,7 +29,7 @@ def main(ctx):
     with open('outputs/metrics.json', 'w') as f:
         json.dump(metrics, f)
 
-    copyfile('outputs/datasets.pkl', Path(ctx['args'].transformed_data)/'datasets.pkl')
+    copy_tree('outputs', args.transformed_data)
 
 
 def start(args):
@@ -41,7 +41,7 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project']
+        'tags': tags
     }
 
     

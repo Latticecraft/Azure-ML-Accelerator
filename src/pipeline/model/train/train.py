@@ -1,6 +1,5 @@
 # imports
-import os
-import argparse
+import os, argparse
 import pickle
 import joblib
 import json
@@ -21,7 +20,7 @@ def main(ctx):
 
     print(f'dict_files.keys(): {dict_files.keys()}')
 
-    if ctx['type'] != 'Regression':
+    if ctx['args'].type != 'Regression':
         X_train = dict_files[f'X_train_{args.imputer}_{args.balancer}']
         y_train = dict_files[f'y_train_{args.imputer}_{args.balancer}']
     else:
@@ -35,7 +34,7 @@ def main(ctx):
     
     # train model
     metrics = {}
-    if ctx['type'] != 'Regression':
+    if ctx['args'].type != 'Regression':
         clf = lgb.LGBMClassifier(num_leaves=int(args.num_leaves), 
                             max_depth=int(args.max_depth), 
                             colsample_bytree=args.colsample_bytree,
@@ -117,8 +116,6 @@ def main(ctx):
     with open(Path(ctx['args'].train_artifacts) / 'best_run.json', 'w') as f:
         json.dump({'runId': ctx['run'].id, 'sweepId': ctx['run'].parent.id, 'best_score': metrics[ctx['args'].primary_metric], 'label': ctx['args'].label}, f)
 
-    mlflow.end_run()
-
 
 def start(args):
     os.makedirs("outputs", exist_ok=True)
@@ -129,8 +126,7 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project'],
-        'type': tags['type']
+        'tags': tags
     }
 
 
@@ -141,6 +137,7 @@ def parse_args():
     # add arguments
     parser.add_argument("--datasets-pkl", type=str, default='data')
     parser.add_argument('--label', type=str, default='label')
+    parser.add_argument('--type', type=str, default='None')
     parser.add_argument('--primary-metric', type=str, default='None')
     parser.add_argument('--imputer', type=str, default='knn')
     parser.add_argument('--balancer', type=str, default='smote')

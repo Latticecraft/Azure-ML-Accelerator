@@ -3,16 +3,12 @@ import os, argparse
 import mlflow
 import requests
 
-from dateutil import parser
-from datetime import datetime, timedelta
-from pathlib import Path
-from azureml.core import Dataset, Datastore, Run
-from azureml.data.datapath import DataPath
+from azureml.core import Run
 
 
 def main(ctx):
-    if len(ctx['args'].url) > 0 and ctx['args'].url != 'None':
-        r = requests.post(f'{ctx["args"].url}&definitionId={ctx["args"].next_pipeline}', json={})
+    if ctx['args'].url != 'None':
+        r = requests.post(f'{ctx["args"].url}&definitionId={ctx["args"].param1}', json={})
         if r.status_code != 200:
             raise ValueError('Unable to trigger next DevOps pipeline')
 
@@ -39,7 +35,7 @@ def parse_args():
     # add arguments
     parser.add_argument('--datasets-pkl', type=str)
     parser.add_argument('--url', type=str)
-    parser.add_argument('--next-pipeline', type=str)
+    parser.add_argument('--param1', type=str)
 
     # parse args
     args = parser.parse_args()

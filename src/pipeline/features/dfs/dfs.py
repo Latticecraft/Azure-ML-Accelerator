@@ -5,9 +5,8 @@ import featuretools as ft
 import mlflow
 
 from azureml.core import Run
+from distutils.dir_util import copy_tree
 from featuretools.primitives import IsNull, Weekday
-from pathlib import Path
-from shutil import copyfile
 
 
 # define functions
@@ -34,13 +33,13 @@ def main(ctx):
     feature_matrix_train, feature_defs = ft.selection.remove_single_value_features(feature_matrix_train, feature_defs)
 
     dataframes_valid = {
-        "customers" : (df_valid, "ID")
+        'customers' : (df_valid, 'ID')
     }
 
     feature_matrix_valid = ft.calculate_feature_matrix(dataframes=dataframes_valid, features=feature_defs)
 
     dataframes_test = {
-        "customers" : (df_test, "ID")
+        'customers' : (df_test, 'ID')
     }
 
     feature_matrix_test = ft.calculate_feature_matrix(dataframes=dataframes_test, features=feature_defs)
@@ -69,11 +68,11 @@ def main(ctx):
     with open('outputs/datasets.pkl', 'wb') as f:
         pickle.dump(dict_files, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    copyfile('outputs/datasets.pkl', Path(ctx['args'].transformed_data) /'datasets.pkl')
+    copy_tree('outputs', args.transformed_data)
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -81,7 +80,7 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project']
+        'tags': tags
     }
 
 
@@ -90,8 +89,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument("--datasets-pkl", type=str, default='data')
-    parser.add_argument("--transformed_data", type=str, help="Path of output data")
+    parser.add_argument('--datasets-pkl', type=str, default='data')
+    parser.add_argument('--transformed_data', type=str, help='Path of output data')
 
     # parse args
     args = parser.parse_args()
@@ -101,7 +100,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)
