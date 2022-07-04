@@ -28,6 +28,7 @@ def main(args):
                 'path': 'azureml://datastores/output/paths/placeholder',
                 'mode': 'ro_mount'
             },
+            'type': 'None',
             'separator': 'comma',
             'label': 'None',
             'unwanted': 'None',
@@ -215,6 +216,7 @@ def main(args):
                 'component': 'file:../../config/component/balancer.yaml',
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.outliers_job.outputs.transformed_data}}',
+                    'type': '${{parent.inputs.type}}',
                     'metrics_in': '${{parent.jobs.outliers_job.outputs.metrics_out}}'
                 },
                 'outputs': {
@@ -238,7 +240,7 @@ def main(args):
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.register_dataset_job.outputs.transformed_data}}',
                     'url': '${{parent.inputs.web_hook}}',
-                    'next_pipeline': '${{parent.inputs.next_pipeline}}'
+                    'param1': '${{parent.inputs.next_pipeline}}'
                 }
             },
             'log_metrics_job': {
@@ -263,7 +265,7 @@ def main(args):
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
 
     if eval(args.run) == True:
-        command = f'az ml job create --file {filepath} --web --set tags.project={args.project} --set tags.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set inputs.runinfo.path=azureml://datastores/output/paths/{args.project}/runinfo --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        command = f'az ml job create --file {filepath} --web --set tags.project={args.project} --set tags.type={args.type} --set inputs.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set inputs.runinfo.path=azureml://datastores/output/paths/{args.project}/runinfo --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
 
         list_files = subprocess.run(command.split(' '))
         print('The exit code was: %d' % list_files.returncode)

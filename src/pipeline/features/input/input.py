@@ -5,7 +5,7 @@ import pandas as pd
 import mlflow
 
 from azureml.core import Run
-from pathlib import Path
+from distutils.dir_util import copy_tree
 
 
 # define functions     
@@ -35,7 +35,8 @@ def main(ctx):
 
     # save data to outputs
     df.to_csv("outputs/transformed.csv", index=False)
-    df.to_csv((Path(ctx['args'].transformed_data) / "transformed.csv"), index=False)
+
+    copy_tree('outputs', args.transformed_data)
 
 
 def start(args):
@@ -47,7 +48,7 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project']
+        'tags': tags
     }
 
 

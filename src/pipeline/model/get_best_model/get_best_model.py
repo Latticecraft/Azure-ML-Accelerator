@@ -2,9 +2,9 @@ import os, argparse
 import json
 import mlflow
 
+from azureml.core import Run
 from distutils.dir_util import copy_tree
 from pathlib import Path
-from azureml.core import Run
 
 
 def main(ctx):
@@ -69,8 +69,7 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project'],
-        'type': tags['type']
+        'tags': tags
     }
 
 

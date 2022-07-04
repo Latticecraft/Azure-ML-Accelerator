@@ -6,7 +6,6 @@ import mlflow
 from azureml.core import Run, Datastore, Dataset
 from azureml.data.datapath import DataPath
 from distutils.dir_util import copy_tree
-from pathlib import Path
 
 
 # define functions
@@ -24,9 +23,9 @@ def main(ctx):
     # register dataset
     datastore = Datastore.get(ctx['run'].experiment.workspace, 'output')
     ds = Dataset.File.upload_directory(src_dir='outputs',
-        target=DataPath(datastore, f'{ctx["project"]}/gold'),
+        target=DataPath(datastore, f'{ctx["tags"]["project"]}/gold'),
         overwrite=True)
-    ds.register(ctx['run'].experiment.workspace, f'{ctx["project"]}/gold', create_new_version=True)
+    ds.register(ctx['run'].experiment.workspace, f'{ctx["tags"]["project"]}/gold', create_new_version=True)
 
 
 def start(args):
@@ -38,7 +37,7 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project']
+        'tags': tags
     }
 
 

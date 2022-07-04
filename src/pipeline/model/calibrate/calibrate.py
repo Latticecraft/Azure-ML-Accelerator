@@ -2,11 +2,10 @@
 import os, argparse
 import joblib
 import pickle
-import shutil
 import mlflow
 
 from azureml.core import Run
-from pathlib import Path
+from distutils.dir_util import copy_tree
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import brier_score_loss
 
@@ -26,7 +25,7 @@ def main(ctx):
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:
         dict_files = pickle.load(f)
 
-    if ctx['type'] != 'Regression':
+    if ctx['tags']['type'] != 'Regression':
         # brier score before calibration
         yhat_proba = [x[1] for x in model.predict_proba(dict_files['X_test'])]
         yhat = [1 if x >= 0.5 else 0 for x in yhat_proba]
@@ -51,7 +50,7 @@ def main(ctx):
         print('Regression model; nothing to do')
 
     joblib.dump(model, 'outputs/model.pkl')
-    shutil.copyfile('outputs/model.pkl', Path(ctx['args'].transformed_data)/'model.pkl')
+    copy_tree('outputs', args.transformed_data)
 
 
 def start(args):
@@ -63,8 +62,7 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project'],
-        'type': tags['type']
+        'tags': tags
     }
 
 
