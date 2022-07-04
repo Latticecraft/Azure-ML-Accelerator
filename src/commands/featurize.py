@@ -266,6 +266,7 @@ def main(args):
 
     if eval(args.run) == True:
         command = f'az ml job create --file {filepath} --web --set tags.project={args.project} --set tags.type={args.type} --set inputs.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set inputs.runinfo.path=azureml://datastores/output/paths/{args.project}/runinfo --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        print(f'command: {command}')
 
         list_files = subprocess.run(command.split(' '))
         print('The exit code was: %d' % list_files.returncode)
