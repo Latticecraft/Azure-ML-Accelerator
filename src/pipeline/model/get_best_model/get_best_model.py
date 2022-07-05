@@ -61,7 +61,7 @@ def main(ctx):
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -78,10 +78,10 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument('--sweep-name', type=str, default='sweep-marketing')
+    parser.add_argument('--sweep-name', type=str, default='None')
     parser.add_argument('--train-artifacts', type=str, default='data')
     parser.add_argument('--primary-metric', type=str, default='None')
-    parser.add_argument("--transformed-data", type=str, help="Path of output data")
+    parser.add_argument('--transformed-data', type=str)
 
     # parse args
     args = parser.parse_args()
@@ -91,7 +91,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

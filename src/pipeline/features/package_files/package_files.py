@@ -1,4 +1,3 @@
-# imports
 import os, argparse
 import pickle
 import pandas as pd
@@ -8,7 +7,6 @@ from azureml.core import Run
 from distutils.dir_util import copy_tree
 
 
-# define functions
 def main(ctx):
     # read in data
     df_feat = pd.read_pickle(ctx['args'].features_csv)
@@ -30,7 +28,7 @@ def main(ctx):
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -47,10 +45,10 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument("--features-csv", type=str, default='data')
-    parser.add_argument("--label-csv", type=str, default='data')
+    parser.add_argument('--features-csv', type=str, default='data')
+    parser.add_argument('--label-csv', type=str, default='data')
     parser.add_argument('--unwanted-csv', type=str)
-    parser.add_argument("--transformed_data", type=str, help="Path of output data")
+    parser.add_argument('--transformed_data', type=str, help='Path of output data')
 
     # parse args
     args = parser.parse_args()
@@ -60,7 +58,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

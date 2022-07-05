@@ -6,12 +6,15 @@ display_name: register_dataset
 command: >-
   python register_dataset.py
   --datasets-pkl ${{inputs.datasets_pkl}}
+  --project ${{inputs.project}}
   --transformed-data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/register_dataset
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:
     type: path
+  project:
+    type: string
 outputs:
   transformed_data:
     type: path

@@ -1,4 +1,3 @@
-# imports
 import os, argparse
 import pandas as pd
 import re
@@ -9,10 +8,9 @@ from distutils.dir_util import copy_tree
 from pathlib import Path
 
 
-# define functions
 def main(ctx):
     # read in data
-    df = pd.read_csv(ctx['args'].marketing_csv)
+    df = pd.read_csv(ctx['args'].input_data)
 
     # print first 5 lines
     print(df.head())
@@ -26,7 +24,7 @@ def main(ctx):
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -43,8 +41,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument("--marketing-csv", type=str, default='data/datasets.pkl')
-    parser.add_argument("--transformed_data", type=str, default='data')
+    parser.add_argument('--input-data', type=str, default='data/datasets.pkl')
+    parser.add_argument('--transformed_data', type=str, default='data')
 
     # parse args
     args = parser.parse_args()
@@ -54,7 +52,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

@@ -5,7 +5,7 @@ name: format
 display_name: format
 command: >-
   python format.py
-  --marketing-csv ${{inputs.marketing_csv}}/datasets.pkl
+  --input-data ${{inputs.input_data}}/datasets.pkl
   --label ${{inputs.label}}
   --replacements ${{inputs.replacements}}
   --datatypes ${{inputs.datatypes}}
@@ -13,7 +13,7 @@ command: >-
 code: ../../src/pipeline/features/format
 environment: azureml:ltcftenv@latest
 inputs:
-  marketing_csv:
+  input_data:
     type: path
   label:
     type: string

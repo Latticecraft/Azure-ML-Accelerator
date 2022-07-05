@@ -9,10 +9,6 @@ def main(args):
     template = {
         '$schema': 'https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json',
         'type': 'pipeline',
-        'tags': {
-            'project': 'None',
-            'type': 'None'
-        },
         'inputs': {
             'input_csv': {
                 'type': 'uri_file',
@@ -28,6 +24,7 @@ def main(args):
                 'path': 'azureml://datastores/output/paths/placeholder',
                 'mode': 'ro_mount'
             },
+            'project': 'None',
             'type': 'None',
             'separator': 'comma',
             'label': 'None',
@@ -39,7 +36,7 @@ def main(args):
             'web_hook': 'None',
             'next_pipeline': 0
         },
-        'experiment_name': 'placeholder',
+        'experiment_name': 'None',
         'compute': 'azureml:cpu-cluster',
         'jobs': {
             'input_job': {
@@ -58,7 +55,7 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/set_header.yaml',
                 'inputs': {
-                    'marketing_csv': '${{parent.jobs.input_job.outputs.transformed_data}}'
+                    'input_data': '${{parent.jobs.input_job.outputs.transformed_data}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -68,7 +65,7 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/format.yaml',
                 'inputs': {
-                    'marketing_csv': '${{parent.jobs.set_header_job.outputs.transformed_data}}',
+                    'input_data': '${{parent.jobs.set_header_job.outputs.transformed_data}}',
                     'label': '${{parent.inputs.label}}',
                     'replacements': '${{parent.inputs.replacements}}',
                     'datatypes': '${{parent.inputs.datatypes}}'
@@ -81,7 +78,7 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/select_columns.yaml',
                 'inputs': {
-                    'marketing_csv': '${{parent.jobs.format_job.outputs.transformed_data}}',
+                    'input_data': '${{parent.jobs.format_job.outputs.transformed_data}}',
                     'columns': '${{parent.inputs.label}}',
                     'take_complement': True
                 },
@@ -93,7 +90,7 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/select_columns.yaml',
                 'inputs': {
-                    'marketing_csv': '${{parent.jobs.select_nonlabel_job.outputs.transformed_data}}',
+                    'input_data': '${{parent.jobs.select_nonlabel_job.outputs.transformed_data}}',
                     'columns': '${{parent.inputs.unwanted}}',
                     'take_complement': False
                 },
@@ -105,7 +102,7 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/select_columns.yaml',
                 'inputs': {
-                    'marketing_csv': '${{parent.jobs.select_nonlabel_job.outputs.transformed_data}}',
+                    'input_data': '${{parent.jobs.select_nonlabel_job.outputs.transformed_data}}',
                     'columns': '${{parent.inputs.unwanted}}',
                     'take_complement': True
                 },
@@ -117,7 +114,7 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/select_columns.yaml',
                 'inputs': {
-                    'marketing_csv': '${{parent.jobs.format_job.outputs.transformed_data}}',
+                    'input_data': '${{parent.jobs.format_job.outputs.transformed_data}}',
                     'columns': '${{parent.inputs.label}}',
                     'take_complement': False
                 },
@@ -228,7 +225,8 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/register_dataset.yaml',
                 'inputs': {
-                    'datasets_pkl': '${{parent.jobs.balancer_job.outputs.transformed_data}}'
+                    'datasets_pkl': '${{parent.jobs.balancer_job.outputs.transformed_data}}',
+                    'project': '${{parent.inputs.project}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -265,7 +263,7 @@ def main(args):
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
 
     if eval(args.run) == True:
-        command = f'az ml job create --file {filepath} --web --set tags.project={args.project} --set tags.type={args.type} --set inputs.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set inputs.runinfo.path=azureml://datastores/output/paths/{args.project}/runinfo --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set inputs.runinfo.path=azureml://datastores/output/paths/{args.project}/runinfo --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
         print(f'command: {command}')
 
         list_files = subprocess.run(command.split(' '))

@@ -1,4 +1,3 @@
-# imports
 import os, argparse
 import pickle
 import featuretools as ft
@@ -9,7 +8,6 @@ from distutils.dir_util import copy_tree
 from featuretools.primitives import IsNull, Weekday
 
 
-# define functions
 def main(ctx):
     # read in data
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:

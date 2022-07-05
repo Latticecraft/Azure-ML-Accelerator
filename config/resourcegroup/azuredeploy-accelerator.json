@@ -2,25 +2,9 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "storageAccounts_sanmlsvcblob_name": {
-            "defaultValue": "[concat('ltcftblob',uniqueString(resourceGroup().id))]",
-            "type": "string"
-        },
-        "api_connection_name": {
-            "defaultValue": "ltcftblobapi",
-            "type": "string"
-        },
-        "workspaceName": {
-            "type": "string",
-            "metadata": {
-                "description": "Specifies the name of the Azure Machine Learning workspace."
-            }
-        },
         "location": {
-            "type": "string",
-            "metadata": {
-                "description": "Specifies the location for workspace."
-            }
+            "defaultValue": "[resourceGroup().location]",
+            "type": "string"
         },
         "tagValues": {
             "type": "object",
@@ -29,6 +13,12 @@
                 "description": "Tags for workspace, will also be populated if provisioning new dependent resources."
             }
         },
+
+        "workspaceName": {
+            "defaultValue": "[concat('ltcftml',uniqueString(resourceGroup().id))]",
+            "type": "string"
+        },
+
         "storageAccountOption": {
             "type": "string",
             "defaultValue": "new",
@@ -59,17 +49,6 @@
                 "Standard_RAGZRS"
             ]
         },
-        "storageAccountBehindVNet": {
-            "type": "string",
-            "defaultValue": "false",
-            "allowedValues": [
-                "true",
-                "false"
-            ],
-            "metadata": {
-                "description": "Determines whether or not to put the storage account behind VNet"
-            }
-        },
         "storageAccountResourceGroupName": {
             "type": "string",
             "defaultValue": "[resourceGroup().name]",
@@ -77,6 +56,7 @@
                 "description": "Resource group name of the storage account if using existing one"
             }
         },
+
         "keyVaultOption": {
             "type": "string",
             "defaultValue": "new",
@@ -95,17 +75,6 @@
                 "description": "Name of the key vault."
             }
         },
-        "keyVaultBehindVNet": {
-            "type": "string",
-            "defaultValue": "false",
-            "allowedValues": [
-                "true",
-                "false"
-            ],
-            "metadata": {
-                "description": "Determines whether or not to put the storage account behind VNet"
-            }
-        },
         "keyVaultResourceGroupName": {
             "type": "string",
             "defaultValue": "[resourceGroup().name]",
@@ -113,6 +82,7 @@
                 "description": "Resource group name of the key vault if using existing one"
             }
         },
+
         "applicationInsightsOption": {
             "type": "string",
             "defaultValue": "new",
@@ -138,6 +108,7 @@
                 "description": "Resource group name of the application insights if using existing one."
             }
         },
+
         "containerRegistryOption": {
             "type": "string",
             "defaultValue": "new",
@@ -173,17 +144,7 @@
                 "description": "Resource group name of the container registry if using existing one."
             }
         },
-        "containerRegistryBehindVNet": {
-            "type": "string",
-            "defaultValue": "false",
-            "allowedValues": [
-                "true",
-                "false"
-            ],
-            "metadata": {
-                "description": "Determines whether or not to put container registry behind VNet."
-            }
-        },
+
         "clusterName": {
             "type": "string",
             "defaultValue": "cpu-cluster",
@@ -213,20 +174,22 @@
             }
         },
 
-
-        "sites_ltcfttemp_name": {
+        "storageAccountName_ext": {
+            "defaultValue": "[concat('ltcftblob',uniqueString(resourceGroup().id))]",
+            "type": "string"
+        },
+        "functionAppName": {
             "defaultValue": "[concat('ltcftfunc',uniqueString(resourceGroup().id))]",
             "type": "String"
         },
-        "components_ltcfttemp_name": {
-            "defaultValue": "[concat('ltcftfunc',uniqueString(resourceGroup().id))]",
-            "type": "String"
-        },
-        "serverfarms_ASP_MLproduct1_8c7f_name": {
+        "appServicePlanName": {
             "defaultValue": "[concat('ASP',uniqueString(resourceGroup().id))]",
             "type": "String"
         },
-        
+        "api_connection_name": {
+            "defaultValue": "ltcftblobapi",
+            "type": "string"
+        },
         "roleNameGuid": {
             "type": "string",
             "defaultValue": "[newGuid()]",
@@ -249,8 +212,8 @@
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2021-09-01",
-            "name": "[parameters('storageAccounts_sanmlsvcblob_name')]",
-            "location": "westus3",
+            "name": "[parameters('storageAccountName_ext')]",
+            "location": "[parameters('location')]",
             "sku": {
                 "name": "Standard_LRS",
                 "tier": "Standard"
@@ -288,9 +251,9 @@
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices",
             "apiVersion": "2021-09-01",
-            "name": "[concat(parameters('storageAccounts_sanmlsvcblob_name'), '/default')]",
+            "name": "[concat(parameters('storageAccountName_ext'), '/default')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sanmlsvcblob_name'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName_ext'))]"
             ],
             "sku": {
                 "name": "Standard_LRS",
@@ -321,10 +284,10 @@
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
             "apiVersion": "2021-09-01",
-            "name": "[concat(parameters('storageAccounts_sanmlsvcblob_name'), '/default/$web')]",
+            "name": "[concat(parameters('storageAccountName_ext'), '/default/$web')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_sanmlsvcblob_name'), 'default')]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sanmlsvcblob_name'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName_ext'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName_ext'))]"
             ],
             "properties": {
                 "immutableStorageWithVersioning": {
@@ -338,10 +301,10 @@
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
             "apiVersion": "2021-09-01",
-            "name": "[concat(parameters('storageAccounts_sanmlsvcblob_name'), '/default/input')]",
+            "name": "[concat(parameters('storageAccountName_ext'), '/default/input')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_sanmlsvcblob_name'), 'default')]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sanmlsvcblob_name'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName_ext'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName_ext'))]"
             ],
             "properties": {
                 "immutableStorageWithVersioning": {
@@ -355,10 +318,10 @@
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
             "apiVersion": "2021-09-01",
-            "name": "[concat(parameters('storageAccounts_sanmlsvcblob_name'), '/default/output')]",
+            "name": "[concat(parameters('storageAccountName_ext'), '/default/output')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_sanmlsvcblob_name'), 'default')]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sanmlsvcblob_name'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName_ext'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName_ext'))]"
             ],
             "properties": {
                 "immutableStorageWithVersioning": {
@@ -459,7 +422,7 @@
                 "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]",
                 "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]",
                 "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]",
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ltcfttemp_name'))]"
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
             ],
             "tags": "[parameters('tagValues')]",
             "identity": {
@@ -499,19 +462,19 @@
             "name": "[concat(parameters('workspaceName'), '/input')]",
             "dependsOn": [
                 "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaceName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sanmlsvcblob_name'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName_ext'))]"
             ],
             "properties": {
                 "contents": {
                     "contentsType": "AzureBlob",
-                    "accountName": "[parameters('storageAccounts_sanmlsvcblob_name')]",
+                    "accountName": "[parameters('storageAccountName_ext')]",
                     "containerName": "input",
                     "endpoint": "core.windows.net",
                     "protocol": "https",
                     "credentials": {
                         "credentialsType": "AccountKey",
                         "secrets": {
-                            "key": "[listKeys(parameters('storageAccounts_sanmlsvcblob_name'), '2019-04-01').keys[0].value]",
+                            "key": "[listKeys(parameters('storageAccountName_ext'), '2019-04-01').keys[0].value]",
                             "secretsType": "AccountKey"
                         }
                     }
@@ -528,19 +491,19 @@
             "name": "[concat(parameters('workspaceName'), '/output')]",
             "dependsOn": [
                 "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaceName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sanmlsvcblob_name'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName_ext'))]"
             ],
             "properties": {
                 "contents": {
                     "contentsType": "AzureBlob",
-                    "accountName": "[parameters('storageAccounts_sanmlsvcblob_name')]",
+                    "accountName": "[parameters('storageAccountName_ext')]",
                     "containerName": "output",
                     "endpoint": "core.windows.net",
                     "protocol": "https",
                     "credentials": {
                         "credentialsType": "AccountKey",
                         "secrets": {
-                            "key": "[listKeys(parameters('storageAccounts_sanmlsvcblob_name'), '2019-04-01').keys[0].value]",
+                            "key": "[listKeys(parameters('storageAccountName_ext'), '2019-04-01').keys[0].value]",
                             "secretsType": "AccountKey"
                         }
                     }
@@ -555,16 +518,16 @@
             "type": "Microsoft.Web/connections",
             "apiVersion": "2016-06-01",
             "name": "[parameters('api_connection_name')]",
-            "location": "westus3",
+            "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sanmlsvcblob_name'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName_ext'))]"
             ],
             "kind": "V1",
             "properties": {
                 "displayName": "ML connection",
                 "parameterValues": {
-                    "accountName": "[parameters('storageAccounts_sanmlsvcblob_name')]",
-                    "accessKey": "[listKeys(parameters('storageAccounts_sanmlsvcblob_name'), '2019-04-01').keys[0].value]"
+                    "accountName": "[parameters('storageAccountName_ext')]",
+                    "accessKey": "[listKeys(parameters('storageAccountName_ext'), '2019-04-01').keys[0].value]"
                 },
                 "statuses": [
                     {
@@ -584,7 +547,7 @@
         {
             "type": "microsoft.insights/components",
             "apiVersion": "2020-02-02",
-            "name": "[parameters('components_ltcfttemp_name')]",
+            "name": "[parameters('functionAppName')]",
             "location": "[variables('appInsightsLocation')]",
             "kind": "web",
             "properties": {
@@ -594,8 +557,8 @@
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2021-03-01",
-            "name": "[parameters('serverfarms_ASP_MLproduct1_8c7f_name')]",
-            "location": "West US 3",
+            "name": "[parameters('appServicePlanName')]",
+            "location": "[parameters('location')]",
             "sku": {
                 "name": "Y1",
                 "tier": "Dynamic",
@@ -620,14 +583,12 @@
         {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2021-03-01",
-            "name": "[parameters('sites_ltcfttemp_name')]",
-            "location": "West US 3",
+            "name": "[parameters('functionAppName')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_MLproduct1_8c7f_name'))]"
+                "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
             ],
-            "tags": {
-
-            },
+            "tags": "[parameters('tagValues')]",
             "kind": "functionapp",
             "identity": {
                 "type": "SystemAssigned"
@@ -636,17 +597,17 @@
                 "enabled": true,
                 "hostNameSslStates": [
                     {
-                        "name": "[concat(parameters('sites_ltcfttemp_name'), '.azurewebsites.net')]",
+                        "name": "[concat(parameters('functionAppName'), '.azurewebsites.net')]",
                         "sslState": "Disabled",
                         "hostType": "Standard"
                     },
                     {
-                        "name": "[concat(parameters('sites_ltcfttemp_name'), '.scm.azurewebsites.net')]",
+                        "name": "[concat(parameters('functionAppName'), '.scm.azurewebsites.net')]",
                         "sslState": "Disabled",
                         "hostType": "Repository"
                     }
                 ],
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_MLproduct1_8c7f_name'))]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
                 "reserved": false,
                 "isXenon": false,
                 "hyperV": false,
@@ -660,7 +621,7 @@
                     "appSettings": [
                         {
                           "name": "AzureWebJobsStorage",
-                          "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccounts_sanmlsvcblob_name'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sanmlsvcblob_name')), '2015-05-01-preview').key1)]"
+                          "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName_ext'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName_ext')), '2015-05-01-preview').key1)]"
                         },
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
@@ -701,14 +662,12 @@
         {
             "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
             "apiVersion": "2021-03-01",
-            "name": "[concat(parameters('sites_ltcfttemp_name'), '/ftp')]",
-            "location": "West US 3",
+            "name": "[concat(parameters('functionAppName'), '/ftp')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ltcfttemp_name'))]"
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
             ],
-            "tags": {
-
-            },
+            "tags": "[parameters('tagValues')]",
             "properties": {
                 "allow": true
             }
@@ -716,14 +675,12 @@
         {
             "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
             "apiVersion": "2021-03-01",
-            "name": "[concat(parameters('sites_ltcfttemp_name'), '/scm')]",
-            "location": "West US 3",
+            "name": "[concat(parameters('functionAppName'), '/scm')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ltcfttemp_name'))]"
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
             ],
-            "tags": {
-
-            },
+            "tags": "[parameters('tagValues')]",
             "properties": {
                 "allow": true
             }
@@ -731,14 +688,12 @@
         {
             "type": "Microsoft.Web/sites/config",
             "apiVersion": "2021-03-01",
-            "name": "[concat(parameters('sites_ltcfttemp_name'), '/web')]",
-            "location": "West US 3",
+            "name": "[concat(parameters('functionAppName'), '/web')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ltcfttemp_name'))]"
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
             ],
-            "tags": {
-
-            },
+            "tags": "[parameters('tagValues')]",
             "properties": {
                 "numberOfWorkers": 1,
                 "defaultDocuments": [
@@ -758,7 +713,7 @@
                 "acrUseManagedIdentityCreds": false,
                 "logsDirectorySizeLimit": 35,
                 "detailedErrorLoggingEnabled": false,
-                "publishingUsername": "$ltcfttemp",
+                "publishingUsername": "$ltcftuser",
                 "scmType": "None",
                 "use32BitWorkerProcess": true,
                 "webSocketsEnabled": false,
@@ -815,20 +770,6 @@
                 "azureStorageAccounts": {}
             }
         },
-        {
-            "type": "Microsoft.Web/sites/hostNameBindings",
-            "apiVersion": "2021-03-01",
-            "name": "[concat(parameters('sites_ltcfttemp_name'), '/', parameters('sites_ltcfttemp_name'), '.azurewebsites.net')]",
-            "location": "West US 3",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ltcfttemp_name'))]"
-            ],
-            "properties": {
-                "siteName": "ltcfttemp",
-                "hostNameType": "Verified"
-            }
-        },
-
 
         {
             "type": "Microsoft.Authorization/roleAssignments",
@@ -836,11 +777,11 @@
             "name": "[parameters('roleNameGuid')]",
             "dependsOn": [
                 "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaceName'))]",
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ltcfttemp_name'))]"
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
             ],
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'f6c7c914-8db3-469d-8ca1-694a8f32e121')]",
-                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('sites_ltcfttemp_name')),'2019-08-01', 'full').identity.principalId]"
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')),'2019-08-01', 'full').identity.principalId]"
             }
         }
     ]
