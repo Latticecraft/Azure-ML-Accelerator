@@ -2,9 +2,9 @@
 
 ## Intro
 
-This accelerator can be used to start a new machine learning project for Azure ML Service using a known good configuration and with the core ML tasks generalized so as to be as reusable as possible.  Functionality will continue to be added along with more advanced scenarios.  The intention is to have an architectural reference that can be adapted to a variety of projects.
+First off, this accelerator is **not** affiliated with Microsoft and is more of an effort to generalize the activities found in most machine learning pipelines and package them up into a clean set of reusable pipelines that can then be adapted to many types of projects.  Functionality will continue to be added along with more advanced scenarios.  Please see http://latticecraft.ai for more information about current and planned features.
 
-This accelerator is **not** meant to be a one-sized-fits-all solution to all problems, and assumes that the input dataset has been engineered to a point similar to datasets that might be found on Kaggle.
+Furthermore, this accelerator is **not** meant to be a one-sized-fits-all solution to all problems, and assumes that the input dataset has been engineered to a point similar to datasets that might be found on Kaggle.
 
 ## Quickstart
 
