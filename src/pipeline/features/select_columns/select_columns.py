@@ -1,4 +1,3 @@
-# imports
 import os, argparse
 import pandas as pd
 import mlflow
@@ -8,10 +7,9 @@ from distutils.dir_util import copy_tree
 from pathlib import Path
 
 
-# define functions
 def main(ctx):
     # read in data
-    df = pd.read_pickle(ctx['args'].marketing_csv)
+    df = pd.read_pickle(ctx['args'].input_data)
 
     # print first 5 lines
     if ctx['args'].columns != 'None':
@@ -27,7 +25,7 @@ def main(ctx):
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -44,10 +42,10 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument("--marketing-csv", type=str, default='data/datasets.pkl')
-    parser.add_argument("--transformed_data", type=str, help="Path of output data")
-    parser.add_argument("--columns", type=str, default='Complain')
-    parser.add_argument("--take_complement", type=str, default=False)
+    parser.add_argument('--input-data', type=str, default='data/datasets.pkl')
+    parser.add_argument('--transformed_data', type=str, help='Path of output data')
+    parser.add_argument('--columns', type=str, default='None')
+    parser.add_argument('--take_complement', type=str, default=False)
 
     # parse args
     args = parser.parse_args()
@@ -57,7 +55,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

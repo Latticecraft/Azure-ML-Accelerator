@@ -14,7 +14,7 @@ def main(ctx):
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -23,7 +23,6 @@ def start(args):
     return {
         'args': args,
         'run': run,
-        'project': tags['project'],
         'data': client.get_run(mlflow.active_run().info.run_id).data
     }
 
@@ -45,7 +44,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

@@ -1,4 +1,3 @@
-# imports
 import os, argparse
 import joblib
 import pickle
@@ -25,7 +24,7 @@ def main(ctx):
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:
         dict_files = pickle.load(f)
 
-    if ctx['tags']['type'] != 'Regression':
+    if ctx['args'].type != 'Regression':
         # brier score before calibration
         yhat_proba = [x[1] for x in model.predict_proba(dict_files['X_test'])]
         yhat = [1 if x >= 0.5 else 0 for x in yhat_proba]
@@ -54,7 +53,7 @@ def main(ctx):
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -71,9 +70,10 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument("--datasets-pkl", type=str, default='data')
-    parser.add_argument('--label', type=str, default='label')
-    parser.add_argument("--transformed_data", type=str, help="Path of output data")
+    parser.add_argument('--datasets-pkl', type=str, default='data')
+    parser.add_argument('--type', type=str, default='None')
+    parser.add_argument('--label', type=str, default='None')
+    parser.add_argument('--transformed_data', type=str)
 
     # parse args
     args = parser.parse_args()
@@ -83,7 +83,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

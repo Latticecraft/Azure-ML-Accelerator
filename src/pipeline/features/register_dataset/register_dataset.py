@@ -1,4 +1,3 @@
-# imports
 import os, argparse
 import pickle
 import mlflow
@@ -8,7 +7,6 @@ from azureml.data.datapath import DataPath
 from distutils.dir_util import copy_tree
 
 
-# define functions
 def main(ctx):
     # read in data
     with open(args.datasets_pkl + '/datasets.pkl', 'rb') as f:
@@ -23,13 +21,13 @@ def main(ctx):
     # register dataset
     datastore = Datastore.get(ctx['run'].experiment.workspace, 'output')
     ds = Dataset.File.upload_directory(src_dir='outputs',
-        target=DataPath(datastore, f'{ctx["tags"]["project"]}/gold'),
+        target=DataPath(datastore, f'{ctx["args"].project}/gold'),
         overwrite=True)
-    ds.register(ctx['run'].experiment.workspace, f'{ctx["tags"]["project"]}/gold', create_new_version=True)
+    ds.register(ctx['run'].experiment.workspace, f'{ctx["args"].project}/gold', create_new_version=True)
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -46,8 +44,9 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument("--datasets-pkl", type=str, default='data')
-    parser.add_argument("--transformed-data", type=str, default='data')
+    parser.add_argument('--datasets-pkl', type=str, default='data')
+    parser.add_argument('--project', type=str, default='None')
+    parser.add_argument('--transformed-data', type=str, default='data')
 
     # parse args
     args = parser.parse_args()
@@ -57,7 +56,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

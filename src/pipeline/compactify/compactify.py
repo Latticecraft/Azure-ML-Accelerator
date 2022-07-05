@@ -1,4 +1,3 @@
-# imports
 import os
 import argparse
 import pandas as pd
@@ -7,13 +6,12 @@ import glob
 from pathlib import Path
 
 
-# define functions
 def main(args):
     df_runinfo = compactify(args.runinfo)
     df_trainlog = compactify(args.trainlog)
 
     # ensure outputs directory exists
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
 
     # save data to outputs
     df_runinfo.to_csv('outputs/runinfo-history.csv', index=False)
@@ -29,7 +27,7 @@ def compactify(path):
         df_all = pd.DataFrame()
 
     # list files in folder
-    deltas = glob.glob(path+"/*")
+    deltas = glob.glob(path+'/*')
     for d in deltas:
         print('adding {}'.format(d))
         df_delta = pd.read_csv((Path(path) / d))
@@ -58,7 +56,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
 

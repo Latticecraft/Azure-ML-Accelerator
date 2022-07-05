@@ -1,4 +1,3 @@
-# imports
 import os, argparse
 import mlflow
 
@@ -9,12 +8,12 @@ from distutils.dir_util import copy_tree
 
 def main(ctx):
     Model.register(model_path=ctx['args'].datasets_pkl + '/model.pkl',
-                    model_name=ctx['tags']['project'],
+                    model_name=ctx['args'].project,
                     tags={
                         'label': ctx['args'].label,
                         'primary_metric': ctx['args'].primary_metric,
                         'type': ctx['args'].type,
-                        'source': ctx['tags']['source'],
+                        'source': ctx['args'].source,
                         'best_score': ctx['tags']['best_score']
                     },
                     description='',
@@ -24,7 +23,7 @@ def main(ctx):
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -41,13 +40,15 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # inputs
-    parser.add_argument("--datasets-pkl", type=str, default='data')
+    parser.add_argument('--datasets-pkl', type=str, default='data')
+    parser.add_argument('--project', type=str, default='None')
     parser.add_argument('--label', type=str, default='None')
     parser.add_argument('--primary-metric', type=str, default='None')
     parser.add_argument('--type', type=str, default='None')
+    parser.add_argument('--source', type=str, default='None')
 
     # outputs
-    parser.add_argument("--transformed-data", type=str, help="Path of output data")
+    parser.add_argument('--transformed-data', type=str)
 
     # parse args
     args = parser.parse_args()
@@ -57,7 +58,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

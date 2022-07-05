@@ -21,10 +21,12 @@ def main(args):
                 'type': 'uri_folder',
                 'mode': 'ro_mount'
             },
+            'project': 'None',
             'sweep_name': 'None',
             'label': 'None',
             'type': 'None',
-            'primary_metric': 'normalized_root_mean_squared_error'
+            'source': 'None',
+            'primary_metric': 'None'
         },
         'jobs': {
             'sweep_job': {
@@ -105,6 +107,7 @@ def main(args):
                 'component': 'file:../../config/component/calibrate.yaml',
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.get_best_model_job.outputs.transformed_data}}',
+                    'type': '${{parent.inputs.type}}',
                     'label': '${{parent.inputs.label}}'
                 },
                 'outputs': {
@@ -116,9 +119,11 @@ def main(args):
                 'component': 'file:../../config/component/register_model.yaml',
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.calibrate_job.outputs.transformed_data}}',
+                    'project': '${{parent.inputs.project}}',
                     'label': '${{parent.inputs.label}}',
                     'primary_metric': '${{parent.inputs.primary_metric}}',
-                    'type': '${{parent.inputs.type}}'
+                    'type': '${{parent.inputs.type}}',
+                    'source': '${{parent.inputs.source}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -138,6 +143,7 @@ def main(args):
                 'component': 'file:../../config/component/log_metrics.yaml',
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.calibrate_job.outputs.transformed_data}}',
+                    'project': '${{parent.inputs.project}}',
                     'destination_folder': 'trainlog'
                 },
                 'outputs': {
@@ -158,7 +164,7 @@ def main(args):
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
     
     if eval(args.run) == True:
-        command = f'az ml job create --file {filepath} --web --set tags.project={args.project} --set tags.type={args.type} --set tags.source={args.source} --set inputs.type={args.type} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.source={args.source} --set inputs.type={args.type} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
         print(f'command: {command}')
 
         list_files = subprocess.run(command.split(' '))

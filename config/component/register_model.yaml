@@ -6,20 +6,26 @@ display_name: register_model
 command: >-
   python register_model.py
   --datasets-pkl ${{inputs.datasets_pkl}}
+  --project ${{inputs.project}}
   --label ${{inputs.label}}
   --primary-metric ${{inputs.primary_metric}}
   --type ${{inputs.type}}
+  --source ${{inputs.source}}
   --transformed-data ${{outputs.transformed_data}}
 code: ../../src/pipeline/model/register_model
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:
     type: path
+  project:
+    type: string
   label:
     type: string
   primary_metric:
     type: string
   type:
+    type: string
+  source:
     type: string
 outputs:
   transformed_data:

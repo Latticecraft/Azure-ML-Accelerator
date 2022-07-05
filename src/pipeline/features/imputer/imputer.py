@@ -1,4 +1,3 @@
-# imports
 import os, argparse
 import pickle
 import numpy as np
@@ -9,7 +8,7 @@ from azureml.core import Run
 from distutils.dir_util import copy_tree
 from sklearn.impute import KNNImputer, SimpleImputer
 
-# define functions
+
 def main(ctx):
     # read in data
     dict_files = pd.read_pickle(ctx['args'].datasets_pkl + '/datasets.pkl')
@@ -40,7 +39,7 @@ def main(ctx):
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -57,8 +56,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument("--datasets-pkl", type=str, default='data')
-    parser.add_argument("--transformed_data", type=str, help="Path of output data")
+    parser.add_argument('--datasets-pkl', type=str, default='data')
+    parser.add_argument('--transformed_data', type=str, help='Path of output data')
 
     # parse args
     args = parser.parse_args()
@@ -68,7 +67,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

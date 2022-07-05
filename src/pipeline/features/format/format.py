@@ -1,4 +1,3 @@
-# imports
 import os, argparse, json
 import pandas as pd
 import urllib.parse
@@ -10,10 +9,9 @@ from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
 
 
-# define functions
 def main(ctx):
     # read in data
-    df = pd.read_pickle(ctx['args'].marketing_csv)
+    df = pd.read_pickle(ctx['args'].input_data)
 
     # perform any replacements specified
     if ctx['args'].replacements != 'None':
@@ -44,7 +42,7 @@ def main(ctx):
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -61,7 +59,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument('--marketing-csv', type=str, default='data/transformed.csv')
+    parser.add_argument('--input-data', type=str, default='data/transformed.csv')
     parser.add_argument('--label', type=str, default='None')
     parser.add_argument('--replacements', type=str, default='None')
     parser.add_argument('--datatypes', type=str, default='None')
@@ -75,7 +73,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

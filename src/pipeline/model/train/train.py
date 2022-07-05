@@ -1,4 +1,3 @@
-# imports
 import os, argparse
 import pickle
 import joblib
@@ -118,7 +117,7 @@ def main(ctx):
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog(log_models=False)
     run = Run.get_context()
@@ -135,7 +134,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument("--datasets-pkl", type=str, default='data')
+    parser.add_argument('--datasets-pkl', type=str, default='data')
     parser.add_argument('--label', type=str, default='label')
     parser.add_argument('--type', type=str, default='None')
     parser.add_argument('--primary-metric', type=str, default='None')
@@ -156,7 +155,7 @@ def parse_args():
 
 
 # run script
-if __name__ == "__main__":
+if __name__ == '__main__':
     # parse args
     args = parse_args()
     ctx = start(args)

@@ -15,7 +15,6 @@ def main(ctx):
     # initialize metrics
     jm = {}
     jm['experiment'] = ctx['run'].experiment.name
-    jm['projectname'] = ctx['tags']['project']
     jm['runId'] = ctx['data'].tags['mlflow.parentRunId']
     jm['runDate'] = datetime.utcnow()
 
@@ -58,12 +57,12 @@ def main(ctx):
     # write metrics to central repo for project
     datastore = Datastore.get(ctx['run'].experiment.workspace, 'output')
     ds = Dataset.File.upload_directory(src_dir=args.transformed_data,
-        target=DataPath(datastore, f'{ctx["tags"]["project"]}/{args.destination_folder}'),
+        target=DataPath(datastore, f'{ctx["args"].project}/{args.destination_folder}'),
         overwrite=True)
 
 
 def start(args):
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
     mlflow.autolog()
     run = Run.get_context()
@@ -83,6 +82,7 @@ def parse_args():
 
     # add arguments
     parser.add_argument('--datasets-pkl', type=str, default='data')
+    parser.add_argument('--project', type=str)
     parser.add_argument('--destination-folder', type=str)
     parser.add_argument('--transformed-data', type=str, help='Path of output data')
 
