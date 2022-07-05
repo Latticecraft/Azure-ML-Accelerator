@@ -312,7 +312,7 @@
                 },
                 "defaultEncryptionScope": "$account-encryption-key",
                 "denyEncryptionScopeOverride": false,
-                "publicAccess": "Blob"
+                "publicAccess": "None"
             }
         },
         {
