@@ -1,4 +1,4 @@
-# Azure-ML-Accelerator
+# Azure-ML-Accelerator (CLI V2)
 
 ## Intro
 
