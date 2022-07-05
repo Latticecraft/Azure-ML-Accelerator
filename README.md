@@ -6,6 +6,8 @@ First off, this accelerator is **not** affiliated with Microsoft and is more of 
 
 Furthermore, this accelerator is **not** meant to be a one-sized-fits-all solution to all problems, and assumes that the input dataset has been engineered to a point similar to datasets that might be found on Kaggle.
 
+If using provided ARM template, it is generally advisable that you first audit the security settings of created resources to ensure they conform to your standards prior to use.
+
 ## Quickstart
 
 1. Setup local environment using: https://docs.microsoft.com/en-us/azure/machine-learning/how-to-configure-cli?tabs=public
