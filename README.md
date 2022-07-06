@@ -46,13 +46,14 @@ Python wrappers for common tasks such as running pipelines and setting up enviro
 
 Python code for each pipeline step.
 
-Functionality will continue to be added along with more advanced scenarios.  Please see http://latticecraft.ai for more information about current and planned features.
+Functionality will continue to be added along with more advanced scenarios including the automated HTML5 dashboard.  Please see http://latticecraft.ai for more information about current and planned features.
 
 ## Quickstart
 
 ### CLI
 
 1. Setup local environment using: https://docs.microsoft.com/en-us/azure/machine-learning/how-to-configure-cli?tabs=public
+
 2. Create a new resource group, and from the command line cd to the project root.  Run:
 ~~~
 python src/commands/setup_rg.py --resource-group [RG name]
@@ -66,6 +67,7 @@ python src/commands/set_defaults.py
 python src/commands/setup_env.py
 ~~~
 5. Upload the input dataset to a new folder in the input container in the blob storage with ltcft prefix.  The name of the folder will be the name of the project and must be used in subsequent steps.
+
 6. Run Featurization pipeline:
 ~~~
 python src/commands/featurize.py --project [Folder name]  --input [File name] --separator [comma|semicolon] --label [Column name of label] --type [Binary|Regression] --replacements [URL encode of Replacements JSON, optional] --datatypes [URL encode of DataTypes JSON, optional] --filename featurize-gen.yaml --run True
@@ -80,6 +82,7 @@ python src/commands/train.py --project [Folder name] --label [Column name of lab
 DevOps release pipelines are stored in config/devops which will run above commands.
 
 1. In Releases section, import Featurize.json and Train.json
+
 2. In Library section, create a new variable group with the following variables (values included here as an example):
 ![VariableGroupExample](https://user-images.githubusercontent.com/1169037/177462462-802632ac-1b41-4721-9598-f61f42899f0a.png)
 
