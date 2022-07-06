@@ -12,40 +12,6 @@
 
 The goal of this project is to generalize the activities found in most machine learning pipelines and package them up into a clean set of reusable pipelines that can then be adapted to many types of projects.
 
-Folder structure:
-
-> config
-
->> component
-
-YAML definitions for each pipeline step.
-
->> devops
-
-DevOps release pipeline exports for each pipeline.
-
->> environment
-
-Conda environment definition which is used for local/remote pipeline runs.
-
->> pipeline
-
-Pipeline YAML definitions.
-
->> resourcegroup
-
-ARM template which can be used to provision PaaS components.
-
-> src
-
->> commands
-
-Python wrappers for common tasks such as running pipelines and setting up environment.
-
->> pipeline
-
-Python code for each pipeline step.
-
 Functionality will continue to be added along with more advanced scenarios including the automated HTML5 dashboard.  Please see http://latticecraft.ai for more information about current and planned features.
 
 ## Quickstart
@@ -86,4 +52,37 @@ DevOps release pipelines are stored in config/devops which will run above comman
 2. In Library section, create a new variable group with the following variables (values included here as an example):
 ![VariableGroupExample](https://user-images.githubusercontent.com/1169037/177462462-802632ac-1b41-4721-9598-f61f42899f0a.png)
 
+## Folder structure
+
+> config
+
+>> component
+
+YAML definitions for each pipeline step.
+
+>> devops
+
+DevOps release pipeline exports for each pipeline.
+
+>> environment
+
+Conda environment definition which is used for local/remote pipeline runs.
+
+>> pipeline
+
+Pipeline YAML definitions.
+
+>> resourcegroup
+
+ARM template which can be used to provision PaaS components.
+
+> src
+
+>> commands
+
+Python wrappers for common tasks such as running pipelines and setting up environment.
+
+>> pipeline
+
+Python code for each pipeline step.
 
