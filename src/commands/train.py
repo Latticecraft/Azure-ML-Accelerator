@@ -16,11 +16,6 @@ def main(args):
                 'path': 'azureml://datastores/output/paths/placeholder',
                 'type': 'uri_folder'
             },
-            'trainlog': {
-                'path': 'azureml://datastores/output/paths/placeholder',
-                'type': 'uri_folder',
-                'mode': 'ro_mount'
-            },
             'project': 'None',
             'sweep_name': 'None',
             'label': 'None',
@@ -164,7 +159,7 @@ def main(args):
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
     
     if eval(args.run) == True:
-        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.source={args.source} --set inputs.type={args.type} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set inputs.trainlog.path=azureml://datastores/output/paths/{args.project}/trainlog --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.source={args.source} --set inputs.type={args.type} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
         print(f'command: {command}')
 
         list_files = subprocess.run(command.split(' '))
