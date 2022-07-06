@@ -6,6 +6,7 @@ display_name: log_metrics
 command: >-
   python log_metrics.py
   --datasets-pkl ${{inputs.datasets_pkl}}
+  --project ${{inputs.project}}
   --destination-folder ${{inputs.destination_folder}}
   --transformed-data ${{outputs.transformed_data}}
 code: ../../src/pipeline/common/log_metrics
@@ -13,6 +14,8 @@ environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:
     type: path
+  project:
+    type: string
   destination_folder:
     type: string
 outputs:
