@@ -235,6 +235,9 @@ def main(args):
     filepath = PurePath(os.path.dirname(os.path.realpath(__file__)), '../../config/pipeline', args.filename)
     print(f'pipeline yaml path: {filepath}')
 
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
     with open(filepath, 'w') as f:
         yaml.SafeDumper.ignore_aliases = lambda *args: True
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)

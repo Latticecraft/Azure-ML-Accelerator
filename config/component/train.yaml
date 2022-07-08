@@ -8,6 +8,7 @@ command: >-
   python train.py 
     --datasets-pkl ${{inputs.datasets_pkl}}
     --label ${{inputs.label}}
+    --type ${{inputs.type}}
     --primary-metric ${{inputs.primary_metric}}
     --imputer ${{inputs.imputer}}
     --balancer ${{inputs.balancer}}
@@ -23,6 +24,8 @@ inputs:
   datasets_pkl:
     type: path
   label:
+    type: string
+  type:
     type: string
   primary_metric:
     type: string
