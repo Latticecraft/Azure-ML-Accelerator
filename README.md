@@ -1,13 +1,5 @@
 # Azure-ML-Accelerator (CLI V2)
 
-## Few notes...
-
-- This accelerator is **not** affiliated with Microsoft.
-
-- This accelerator is **not** meant to be a one-size-fits-all solution to all problems, and assumes that the input dataset has been engineered to a point similar to datasets that might be found on Kaggle.
-
-- If using provided ARM template, it is generally advisable that you first audit the security settings of created resources to ensure they conform to your standards prior to use.
-
 ## Intro
 
 The goal of this project is to generalize the activities found in most machine learning pipelines and package them up into a clean set of reusable pipelines that can then be adapted to many types of projects.
