@@ -175,12 +175,12 @@ def parse_args():
 
     # add arguments
     parser.add_argument('--filename', type=str, required=True)
-    parser.add_argument('--run', type=str, required=False)
+    parser.add_argument('--run', type=str, required=True)
     parser.add_argument('--project', type=str, required=True)
-    parser.add_argument('--type', type=str, required=False)
-    parser.add_argument('--primary-metric', type=str, required=False)
-    parser.add_argument('--source', type=str, required=False)
+    parser.add_argument('--type', type=str, required=True)
+    parser.add_argument('--primary-metric', type=str, required=True)
     parser.add_argument('--label', type=str, required=True)
+    parser.add_argument('--source', type=str, required=False)
     parser.add_argument('--num-trials', type=int, required=False, default=5)
     parser.add_argument('--web-hook', type=str, required=False)
     parser.add_argument('--next-pipeline', type=int, required=False)

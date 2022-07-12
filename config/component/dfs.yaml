@@ -6,12 +6,24 @@ display_name: dfs
 command: >-
   python dfs.py
   --datasets-pkl ${{inputs.datasets_pkl}}
+  --remove-low-info ${{inputs.remove_low_info}}
+  --remove-high-corr ${{inputs.remove_high_corr}}
+  --remove-high-nan ${{inputs.remove_high_nan}}
+  --remove-single-val ${{inputs.remove_single_val}}
   --transformed_data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/dfs
 environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:
     type: path
+  remove_low_info:
+    type: boolean
+  remove_high_corr:
+    type: boolean
+  remove_high_nan:
+    type: boolean
+  remove_single_val:
+    type: boolean
 outputs:
   transformed_data:
     type: path

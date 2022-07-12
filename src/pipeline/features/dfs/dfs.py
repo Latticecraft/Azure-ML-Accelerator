@@ -20,24 +20,36 @@ def main(ctx):
     dict_predfs['X_train'] = df_train
 
     dataframes_train = {
-        "customers" : (df_train, "ID")
+        'main': (df_train, 'ID')
     }
 
-    feature_matrix_train, feature_defs = ft.dfs(dataframes=dataframes_train, relationships=[], target_dataframe_name='customers', trans_primitives=[IsNull, Weekday])
+    feature_matrix_train, feature_defs = ft.dfs(dataframes=dataframes_train, relationships=[], target_dataframe_name='main', trans_primitives=[IsNull, Weekday])
     feature_matrix_train, feature_defs = ft.encode_features(feature_matrix_train, feature_defs)
-    feature_matrix_train, feature_defs = ft.selection.remove_low_information_features(feature_matrix_train, feature_defs)
-    feature_matrix_train, feature_defs = ft.selection.remove_highly_correlated_features(feature_matrix_train, feature_defs)
-    feature_matrix_train, feature_defs = ft.selection.remove_highly_null_features(feature_matrix_train, feature_defs)
-    feature_matrix_train, feature_defs = ft.selection.remove_single_value_features(feature_matrix_train, feature_defs)
+
+    if eval(ctx['args'].remove_low_info) == True:
+        print('removing low information features...')
+        feature_matrix_train, feature_defs = ft.selection.remove_low_information_features(feature_matrix_train, feature_defs)
+    
+    if eval(ctx['args'].remove_high_corr) == True:
+        print('removing highly correlated features...')
+        feature_matrix_train, feature_defs = ft.selection.remove_highly_correlated_features(feature_matrix_train, feature_defs)
+
+    if eval(ctx['args'].remove_high_nan) == True:
+        print('removing highly null features...')
+        feature_matrix_train, feature_defs = ft.selection.remove_highly_null_features(feature_matrix_train, feature_defs)
+    
+    if eval(ctx['args'].remove_single_val) == True:
+        print('removing single value features...')
+        feature_matrix_train, feature_defs = ft.selection.remove_single_value_features(feature_matrix_train, feature_defs)
 
     dataframes_valid = {
-        'customers' : (df_valid, 'ID')
+        'main': (df_valid, 'ID')
     }
 
     feature_matrix_valid = ft.calculate_feature_matrix(dataframes=dataframes_valid, features=feature_defs)
 
     dataframes_test = {
-        'customers' : (df_test, 'ID')
+        'main': (df_test, 'ID')
     }
 
     feature_matrix_test = ft.calculate_feature_matrix(dataframes=dataframes_test, features=feature_defs)
@@ -86,8 +98,14 @@ def parse_args():
     # setup arg parser
     parser = argparse.ArgumentParser()
 
-    # add arguments
+    # input arguments
     parser.add_argument('--datasets-pkl', type=str, default='data')
+    parser.add_argument('--remove-low-info', type=str, default='True')
+    parser.add_argument('--remove-high-corr', type=str, default='True')
+    parser.add_argument('--remove-high-nan', type=str, default='True')
+    parser.add_argument('--remove-single-val', type=str, default='True')
+
+    # output arguments
     parser.add_argument('--transformed_data', type=str, help='Path of output data')
 
     # parse args

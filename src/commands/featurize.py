@@ -23,6 +23,10 @@ def main(args):
             'datatypes': 'None',
             'downsample_enable': False,
             'downsample_ratio': 0.1,
+            'remove_low_info': True,
+            'remove_high_corr': True,
+            'remove_high_nan': True,
+            'remove_single_val': True,
             'web_hook': 'None',
             'next_pipeline': 0
         },
@@ -150,7 +154,11 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/dfs.yaml',
                 'inputs': {
-                    'datasets_pkl': '${{parent.jobs.downsample_job.outputs.transformed_data}}'
+                    'datasets_pkl': '${{parent.jobs.downsample_job.outputs.transformed_data}}',
+                    'remove_low_info': '${{parent.inputs.remove_low_info}}',
+                    'remove_high_corr': '${{parent.inputs.remove_high_corr}}',
+                    'remove_high_nan': '${{parent.inputs.remove_high_nan}}',
+                    'remove_single_val': '${{parent.inputs.remove_single_val}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -259,9 +267,9 @@ def parse_args():
 
     # add arguments
     parser.add_argument('--filename', type=str, required=True)
-    parser.add_argument('--run', type=str, required=False)
+    parser.add_argument('--run', type=str, required=True)
     parser.add_argument('--project', type=str, required=True)
-    parser.add_argument('--type', type=str, required=False)
+    parser.add_argument('--type', type=str, required=True)
     parser.add_argument('--input', type=str, required=True)
     parser.add_argument('--label', type=str, required=True)
     parser.add_argument('--replacements', type=str, required=False)
