@@ -27,14 +27,11 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument('--file-path', type=str, required=False)
-    parser.add_argument('--project', type=str, required=False)
+    parser.add_argument('--file-path', type=str, required=True)
+    parser.add_argument('--project', type=str, required=True)
     
     # parse args
     args = parser.parse_args()
-
-    prompt_input(args, 'file_path', 'File to upload: ')
-    prompt_input(args, 'project', 'Project: ')
         
     # return args
     return args
