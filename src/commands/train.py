@@ -6,6 +6,8 @@ from pathlib import PurePath
 
 
 def main(args):
+    # reason for dynamic generation of yaml is b/c afaik oob input binding doesn't yet
+    # support things like array and integer binding to be able to control sweep
     template = {
         '$schema': 'https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json',
         'type': 'pipeline',
@@ -20,8 +22,10 @@ def main(args):
             'sweep_name': 'None',
             'label': 'None',
             'type': 'None',
+            'primary_metric': 'None',
             'source': 'None',
-            'primary_metric': 'None'
+            'web_hook': 'None',
+            'next_pipeline': 0
         },
         'jobs': {
             'sweep_job': {
@@ -32,11 +36,11 @@ def main(args):
                 'search_space': {
                     'imputer': {
                         'type': 'choice',
-                        'values': ['mean', 'knn']
+                        'values': args.imputers.split(',')
                     },
                     'balancer': {
                         'type': 'choice',
-                        'values': ['none', 'ros', 'smote']
+                        'values': args.balancers.split(',')
                     },
                     'max_depth': {
                         'type': 'quniform',
@@ -181,6 +185,8 @@ def parse_args():
     parser.add_argument('--primary-metric', type=str, required=True)
     parser.add_argument('--label', type=str, required=True)
     parser.add_argument('--source', type=str, required=False)
+    parser.add_argument('--imputers', type=str, required=False, default='mean')
+    parser.add_argument('--balancers', type=str, required=False, default='none')
     parser.add_argument('--num-trials', type=int, required=False, default=5)
     parser.add_argument('--web-hook', type=str, required=False)
     parser.add_argument('--next-pipeline', type=int, required=False)
