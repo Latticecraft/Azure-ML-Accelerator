@@ -1,6 +1,7 @@
 import os, argparse
 import json
 import mlflow
+import numpy as np
 
 from azureml.core import Run
 from distutils.dir_util import copy_tree
@@ -36,6 +37,11 @@ def main(ctx):
         'sweep_balancer': [json.loads(tags[k])['balancer'] for k in metrics.keys() if k in tags.keys()],
         'sweep_imputer': [json.loads(tags[k])['imputer'] for k in metrics.keys() if k in tags.keys()]
     }
+
+    dict_new['num_balancer'] = len(np.unique(dict_new['sweep_balancer']))
+    dict_new['num_imputer'] = len(np.unique(dict_new['sweep_imputer']))
+
+    print(f'dict_new: {dict_new}')
 
     # log best run metric to parent pipeline
     ctx['run'].parent.set_tags({'best_score': best_score, 'label': label})
