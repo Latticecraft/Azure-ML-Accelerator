@@ -1,4 +1,5 @@
 import os, argparse
+import pandas as pd
 import pickle
 import mlflow
 
@@ -17,6 +18,9 @@ def main(ctx):
         pickle.dump(dict_files, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     copy_tree('outputs', args.transformed_data)
+
+    # get imputers/balancers for tagging
+    files = pd.DataFrame(list(pd.Series(list(dict_files.keys())).str.split('_')))
 
     # register dataset
     datastore = Datastore.get(ctx['run'].experiment.workspace, 'output')

@@ -12,7 +12,7 @@ def main(ctx):
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:
         dict_files = pickle.load(f)
 
-    if ctx['args'].type != 'Regression':
+    if ctx['args'].balancer_mode == 'Oversample':
         new_files = {}
         for key in dict_files.keys():
             if key.startswith('X_train'):
@@ -22,26 +22,43 @@ def main(ctx):
                 # get categorical indices
                 cat_indices = [df_x.columns.get_loc(x) for x in df_x.columns if df_x[x].dtype.name == 'category' or df_x[x].dtype.name == 'boolean']
 
+                # do nothing
+                new_files[get_key(key, 'X', 'train', 'none')] = df_x
+                new_files[get_key(key, 'y', 'train', 'none')] = df_y
+                copy_valid_test(new_files, dict_files, key, 'none')
+
                 # apply over-samplers
                 X_train_ros, y_train_ros = RandomOverSampler().fit_resample(df_x, df_y)
+                new_files[get_key(key, 'X', 'train', 'ros')] = X_train_ros
+                new_files[get_key(key, 'y', 'train', 'ros')] = y_train_ros
+                copy_valid_test(new_files, dict_files, key, 'ros')
 
                 if len(cat_indices) > 0:
-                    X_train_smote, y_train_smote = SMOTENC(categorical_features=cat_indices).fit_resample(df_x, df_y)
+                    print('Categorical and/or boolean features found, using SMOTENC')
+                    try:
+                        X_train_smote, y_train_smote = SMOTENC(categorical_features=cat_indices).fit_resample(df_x, df_y)
+                        new_files[get_key(key, 'X', 'train', 'smote')] = X_train_smote
+                        new_files[get_key(key, 'y', 'train', 'smote')] = y_train_smote
+                        copy_valid_test(new_files, dict_files, key, 'smote')
+                    except:
+                        print('Error running SMOTE')
                 else:
-                    X_train_smote, y_train_smote = SMOTE().fit_resample(df_x, df_y)
+                    print('Categorical and/or boolean features NOT found, using SMOTE/ADASYN')
+                    try:
+                        X_train_smote, y_train_smote = SMOTE().fit_resample(df_x, df_y)
+                        new_files[get_key(key, 'X', 'train', 'smote')] = X_train_smote
+                        new_files[get_key(key, 'y', 'train', 'smote')] = y_train_smote
+                        copy_valid_test(new_files, dict_files, key, 'smote')
+                    except:
+                        print('Error running SMOTE')
 
-                new_files[key+'_none'] = df_x
-                new_files[key.replace('X','y')+'_none'] = df_y
-                new_files[key+'_ros'] = X_train_ros
-                new_files[key.replace('X','y')+'_ros'] = y_train_ros
-                new_files[key+'_smote'] = X_train_smote
-                new_files[key.replace('X','y')+'_smote'] = y_train_smote
-
-        # add back in test validation set
-        for key in dict_files.keys():
-            if key.startswith('X_valid') or key.startswith('X_test'):
-                new_files['{}'.format(key)] = dict_files[key]
-                new_files['{}'.format(key.replace('X','y'))] = dict_files[key.replace('X','y')]
+                    try:
+                        X_train_adasyn, y_train_adasyn = ADASYN().fit_resample(df_x, df_y)
+                        new_files[get_key(key, 'X', 'train', 'adasyn')] = X_train_adasyn
+                        new_files[get_key(key, 'y', 'train', 'adasyn')] = y_train_adasyn
+                        copy_valid_test(new_files, dict_files, key, 'adasyn')
+                    except:
+                        print('Error running ADASYN')
     else:
         new_files = dict_files
 
@@ -50,6 +67,27 @@ def main(ctx):
         pickle.dump(new_files, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     copy_tree('outputs', args.transformed_data)
+
+
+def copy_valid_test(dict_new, dict_old, key, balancer):
+    dict_new[get_key(key, 'X', 'valid', balancer)] = dict_old[get_key(key, 'X', 'valid', None)]
+    dict_new[get_key(key, 'y', 'valid', balancer)] = dict_old[get_key(key, 'y', 'valid', None)]
+    dict_new[get_key(key, 'X', 'test', balancer)] = dict_old[get_key(key, 'X', 'test', None)]
+    dict_new[get_key(key, 'y', 'test', balancer)] = dict_old[get_key(key, 'y', 'test', None)]
+
+
+def get_key(key, type, fold, balancer):
+    arr = key.split('_')
+    if balancer != None:
+        if len(arr) == 3:
+            return f'{type}_{fold}_{arr[2]}_{balancer}'
+        else:
+            raise Exception('Unknown filename format')
+    else:
+        if len(arr) == 3:
+            return f'{type}_{fold}_{arr[2]}'
+        else:
+            raise Exception('Unknown filename format')
 
 
 def start(args):
@@ -71,6 +109,7 @@ def parse_args():
 
     # add arguments
     parser.add_argument('--datasets-pkl', type=str, default='data')
+    parser.add_argument('--balancer-mode', type=str, default='None')
     parser.add_argument('--type', type=str)
     parser.add_argument('--transformed_data', type=str, help='Path of output data')
 

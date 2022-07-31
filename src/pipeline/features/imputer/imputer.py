@@ -20,22 +20,43 @@ def main(ctx):
         else: # imputation == 'knn'
             imputer = KNNImputer(missing_values=np.nan, n_neighbors=5)
 
-        imputer.fit(dict_files['X_train'])
+        for key in dict_files.keys():
+            if 'X_train' in key:
+                df_x = dict_files['X_train'] if 'X_train' in dict_files.keys() else dict_files['X_train_none']
+                imputer.fit(df_x)
 
-        new_files[f'X_train_{imputation}'] = pd.DataFrame(imputer.transform(dict_files['X_train']), columns=imputer.feature_names_in_)
-        new_files[f'y_train_{imputation}'] = dict_files['y_train']
-        
-        new_files[f'X_valid_{imputation}'] = pd.DataFrame(imputer.transform(dict_files['X_valid']), columns=imputer.feature_names_in_)
-        new_files[f'y_valid_{imputation}'] = dict_files['y_valid']
+                new_files[get_key(key, 'X', 'train', imputation)] = pd.DataFrame(imputer.transform(dict_files[key]), columns=imputer.feature_names_in_)
+                new_files[get_key(key, 'y', 'train', imputation)] = dict_files[get_key(key, 'y', 'train', '')]
 
-        new_files[f'X_test_{imputation}'] = pd.DataFrame(imputer.transform(dict_files['X_test']), columns=imputer.feature_names_in_)
-        new_files[f'y_test_{imputation}'] = dict_files['y_test']
+                new_files[get_key(key, 'X', 'valid', imputation)] = pd.DataFrame(imputer.transform(dict_files[key.replace("train", "valid")]), columns=imputer.feature_names_in_)
+                new_files[get_key(key, 'y', 'valid', imputation)] = dict_files[get_key(key, 'y', 'valid', '')]
+
+                new_files[get_key(key, 'X', 'test', imputation)] = pd.DataFrame(imputer.transform(dict_files[key.replace("train", "test")]), columns=imputer.feature_names_in_)
+                new_files[get_key(key, 'y', 'test', imputation)] = dict_files[get_key(key, 'y', 'test', '')]
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
         pickle.dump(new_files, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     copy_tree('outputs', args.transformed_data)
+
+
+def get_key(key, type, fold, imputer):
+    arr = key.split('_')
+    if imputer != '':
+        if len(arr) == 2:
+            return f'{type}_{fold}_{imputer}'
+        elif len(arr) == 3:
+            return f'{type}_{fold}_{imputer}_{arr[2]}'
+        else:
+            raise Exception('Unknown filename format')
+    else:
+        if len(arr) == 2:
+            return f'{type}_{fold}'
+        elif len(arr) == 3:
+            return f'{type}_{fold}_{arr[2]}'
+        else:
+            raise Exception('Unknown filename format')
 
 
 def start(args):

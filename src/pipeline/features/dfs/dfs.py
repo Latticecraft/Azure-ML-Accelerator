@@ -14,62 +14,65 @@ def main(ctx):
         dict_files = pickle.load(f)
 
     dict_predfs = {}
-    df_train = dict_files['X_train']
-    df_valid = dict_files['X_valid']
-    df_test = dict_files['X_test']
-    dict_predfs['X_train'] = df_train
+    for key in dict_files.keys():
+        if 'X_train' in key:
+            df_train = dict_files[key]
+            df_valid = dict_files[key.replace('train', 'valid')]
+            df_test = dict_files[key.replace('train', 'test')]
+            dict_predfs[key] = df_train
 
-    dataframes_train = {
-        'main': (df_train, 'ID')
-    }
+            dataframes_train = {
+                'main': (df_train, 'ID')
+            }
 
-    feature_matrix_train, feature_defs = ft.dfs(dataframes=dataframes_train, relationships=[], target_dataframe_name='main', trans_primitives=[IsNull, Weekday])
-    feature_matrix_train, feature_defs = ft.encode_features(feature_matrix_train, feature_defs)
+            feature_matrix_train, feature_defs = ft.dfs(dataframes=dataframes_train, relationships=[], target_dataframe_name='main', trans_primitives=[IsNull, Weekday])
+            feature_matrix_train, feature_defs = ft.encode_features(feature_matrix_train, feature_defs)
 
-    if eval(ctx['args'].remove_low_info) == True:
-        print('removing low information features...')
-        feature_matrix_train, feature_defs = ft.selection.remove_low_information_features(feature_matrix_train, feature_defs)
-    
-    if eval(ctx['args'].remove_high_corr) == True:
-        print('removing highly correlated features...')
-        feature_matrix_train, feature_defs = ft.selection.remove_highly_correlated_features(feature_matrix_train, feature_defs)
+            if eval(ctx['args'].remove_low_info) == True:
+                print('removing low information features...')
+                feature_matrix_train, feature_defs = ft.selection.remove_low_information_features(feature_matrix_train, feature_defs)
+            
+            if eval(ctx['args'].remove_high_corr) == True:
+                print('removing highly correlated features...')
+                feature_matrix_train, feature_defs = ft.selection.remove_highly_correlated_features(feature_matrix_train, feature_defs)
 
-    if eval(ctx['args'].remove_high_nan) == True:
-        print('removing highly null features...')
-        feature_matrix_train, feature_defs = ft.selection.remove_highly_null_features(feature_matrix_train, feature_defs)
-    
-    if eval(ctx['args'].remove_single_val) == True:
-        print('removing single value features...')
-        feature_matrix_train, feature_defs = ft.selection.remove_single_value_features(feature_matrix_train, feature_defs)
+            if eval(ctx['args'].remove_high_nan) == True:
+                print('removing highly null features...')
+                feature_matrix_train, feature_defs = ft.selection.remove_highly_null_features(feature_matrix_train, feature_defs)
+            
+            if eval(ctx['args'].remove_single_val) == True:
+                print('removing single value features...')
+                feature_matrix_train, feature_defs = ft.selection.remove_single_value_features(feature_matrix_train, feature_defs)
 
-    dataframes_valid = {
-        'main': (df_valid, 'ID')
-    }
+            dataframes_valid = {
+                'main': (df_valid, 'ID')
+            }
 
-    feature_matrix_valid = ft.calculate_feature_matrix(dataframes=dataframes_valid, features=feature_defs)
+            feature_matrix_valid = ft.calculate_feature_matrix(dataframes=dataframes_valid, features=feature_defs)
 
-    dataframes_test = {
-        'main': (df_test, 'ID')
-    }
+            dataframes_test = {
+                'main': (df_test, 'ID')
+            }
 
-    feature_matrix_test = ft.calculate_feature_matrix(dataframes=dataframes_test, features=feature_defs)
+            feature_matrix_test = ft.calculate_feature_matrix(dataframes=dataframes_test, features=feature_defs)
 
-    # ensure columns are in same order as train
-    feature_matrix_valid = feature_matrix_valid[list(feature_matrix_train.columns)]
-    feature_matrix_test = feature_matrix_test[list(feature_matrix_train.columns)]
+            # ensure columns are in same order as train
+            feature_matrix_valid = feature_matrix_valid[list(feature_matrix_train.columns)]
+            feature_matrix_test = feature_matrix_test[list(feature_matrix_train.columns)]
 
-    # add dictionary files
-    dict_files['X_train'] = feature_matrix_train
-    dict_files['X_valid'] = feature_matrix_valid
-    dict_files['X_test'] = feature_matrix_test
+            # add dictionary files
+            dict_files[key] = feature_matrix_train
+            dict_files[key.replace('train', 'valid')] = feature_matrix_valid
+            dict_files[key.replace('train', 'test')] = feature_matrix_test
 
     # log metrics
-    df = dict_predfs['X_train']
+    key = 'X_train' if 'X_train' in dict_predfs.keys() else 'X_train_none'
+    df = dict_predfs[key]
     dict_dtypes = df.dtypes.value_counts().to_dict()
     for (k,v) in dict_dtypes.items():
         mlflow.log_metric(f'dtypes.predfs.{k}', v)
 
-    df = dict_files['X_train']
+    df = dict_files[key]
     dict_dtypes = df.dtypes.value_counts().to_dict()
     for (k,v) in dict_dtypes.items():
         mlflow.log_metric(f'dtypes.postdfs.{k}', v)
