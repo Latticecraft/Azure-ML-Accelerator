@@ -12,10 +12,10 @@ def main(ctx):
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:
         dict_files = pickle.load(f)
 
-    if ctx['args'].balancer_mode == 'Oversample':
+    if 'Oversample' in ctx['args'].balancer_mode:
         new_files = {}
         for key in dict_files.keys():
-            if key.startswith('X_train'):
+            if key.startswith('X_train') and 'none' in key:
                 df_x = dict_files[key]
                 df_y = dict_files[key.replace('X','y')]
 

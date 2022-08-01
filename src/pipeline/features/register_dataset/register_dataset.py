@@ -1,4 +1,5 @@
 import os, argparse
+import numpy as np
 import pandas as pd
 import pickle
 import mlflow
@@ -20,14 +21,18 @@ def main(ctx):
     copy_tree('outputs', args.transformed_data)
 
     # get imputers/balancers for tagging
-    files = pd.DataFrame(list(pd.Series(list(dict_files.keys())).str.split('_')))
+    df_files = pd.DataFrame(list(pd.Series(list(dict_files.keys())).str.split('_')),
+        columns=['type', 'fold', 'imputer', 'balancer'])
+
+    imputers = ','.join(np.unique(df_files['imputer']))
+    balancers = ','.join(np.unique(df_files['balancer']))
 
     # register dataset
     datastore = Datastore.get(ctx['run'].experiment.workspace, 'output')
     ds = Dataset.File.upload_directory(src_dir='outputs',
         target=DataPath(datastore, f'{ctx["args"].project}/gold'),
         overwrite=True)
-    ds.register(ctx['run'].experiment.workspace, f'{ctx["args"].project}/gold', create_new_version=True)
+    ds.register(ctx['run'].experiment.workspace, f'{ctx["args"].project}/gold', create_new_version=True, tags={'imputers': imputers, 'balancers': balancers})
 
 
 def start(args):

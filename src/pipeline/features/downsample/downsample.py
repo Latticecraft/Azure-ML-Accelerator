@@ -12,30 +12,29 @@ def main(ctx):
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:
         dict_files = pickle.load(f)
     
-    if ctx['args'].balancer_mode == 'Undersample':
-        new_files = {
-            'X_valid_none': dict_files['X_valid'],
-            'y_valid_none': dict_files['y_valid'],
-            'X_valid_rus': dict_files['X_valid'],
-            'y_valid_rus': dict_files['y_valid'],
-            'X_test_none': dict_files['X_test'],
-            'y_test_none': dict_files['y_test'],
-            'X_test_rus': dict_files['X_test'],
-            'y_test_rus': dict_files['y_test']
-        }
+    new_files = {
+        'X_valid_none': dict_files['X_valid'],
+        'y_valid_none': dict_files['y_valid'],
+        'X_test_none': dict_files['X_test'],
+        'y_test_none': dict_files['y_test']
+    }
 
-        df_x = dict_files['X_train']
-        df_y = dict_files['y_train']
+    df_x = dict_files['X_train']
+    df_y = dict_files['y_train']
 
+    new_files['X_train_none'] = df_x
+    new_files['y_train_none'] = df_y
+
+    if 'Undersample' in ctx['args'].balancer_mode:
         # apply under-samplers
         X_train_rus, y_train_rus = RandomUnderSampler().fit_resample(df_x, df_y)
 
-        new_files['X_train_none'] = df_x
-        new_files['y_train_none'] = df_y
         new_files['X_train_rus'] = X_train_rus
         new_files['y_train_rus'] = y_train_rus
-    else:
-        new_files = dict_files
+        new_files['X_valid_rus'] = dict_files['X_valid']
+        new_files['y_valid_rus'] = dict_files['y_valid']
+        new_files['X_test_rus'] = dict_files['X_test']
+        new_files['y_test_rus'] = dict_files['y_test']
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
