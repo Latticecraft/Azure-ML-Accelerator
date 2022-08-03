@@ -75,8 +75,8 @@ def main(ctx):
         yhat = [x for x in clf.predict(X_test)]
 
         rmse = mean_squared_error(y_test[args.label].ravel(), yhat, squared=False)
-        metrics['root_mean_squared_error'] = rmse
-        mlflow.log_metric('root_mean_squared_error', rmse)
+        metrics['neg_root_mean_squared_error'] = -rmse
+        mlflow.log_metric('neg_root_mean_squared_error', -rmse)
 
     # explanations
     client = ExplanationClient.from_run(ctx['run'])

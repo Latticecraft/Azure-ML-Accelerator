@@ -6,7 +6,6 @@ display_name: balancer
 command: >-
   python balancer.py
   --datasets-pkl ${{inputs.datasets_pkl}}
-  --balancer-mode ${{inputs.balancer_mode}}
   --type ${{inputs.type}}
   --transformed_data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/balancer
@@ -14,8 +13,6 @@ environment: azureml:ltcftenv@latest
 inputs:
   datasets_pkl:
     type: path
-  balancer_mode:
-    type: string
   type:
     type: string
 outputs:

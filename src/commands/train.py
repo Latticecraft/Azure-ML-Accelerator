@@ -73,7 +73,7 @@ def main(args):
                     }
                 },
                 'objective': {
-                    'goal': 'minimize',
+                    'goal': 'maximize',
                     'primary_metric': '${{parent.inputs.primary_metric}}'
                 },
                 'limits': {

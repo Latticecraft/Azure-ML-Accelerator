@@ -10,35 +10,30 @@ from imblearn.under_sampling import RandomUnderSampler
 def main(ctx):
     # read in data
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:
-        dict_files = pickle.load(f)
+        dict_orig = pickle.load(f)
     
-    new_files = {
-        'X_valid_none': dict_files['X_valid'],
-        'y_valid_none': dict_files['y_valid'],
-        'X_test_none': dict_files['X_test'],
-        'y_test_none': dict_files['y_test']
+    dict_new = {
+        'X_train_none': dict_orig['X_train'],
+        'y_train_none': dict_orig['y_train'],
+        'X_valid_none': dict_orig['X_valid'],
+        'y_valid_none': dict_orig['y_valid'],
+        'X_test_none': dict_orig['X_test'],
+        'y_test_none': dict_orig['y_test']
     }
 
-    df_x = dict_files['X_train']
-    df_y = dict_files['y_train']
+    # apply random undersampler
+    X_train_rus, y_train_rus = RandomUnderSampler().fit_resample(dict_new['X_train_none'], dict_new['y_train_none'])
 
-    new_files['X_train_none'] = df_x
-    new_files['y_train_none'] = df_y
-
-    if 'Undersample' in ctx['args'].balancer_mode:
-        # apply under-samplers
-        X_train_rus, y_train_rus = RandomUnderSampler().fit_resample(df_x, df_y)
-
-        new_files['X_train_rus'] = X_train_rus
-        new_files['y_train_rus'] = y_train_rus
-        new_files['X_valid_rus'] = dict_files['X_valid']
-        new_files['y_valid_rus'] = dict_files['y_valid']
-        new_files['X_test_rus'] = dict_files['X_test']
-        new_files['y_test_rus'] = dict_files['y_test']
+    dict_new['X_train_rus'] = X_train_rus
+    dict_new['y_train_rus'] = y_train_rus
+    dict_new['X_valid_rus'] = dict_orig['X_valid']
+    dict_new['y_valid_rus'] = dict_orig['y_valid']
+    dict_new['X_test_rus'] = dict_orig['X_test']
+    dict_new['y_test_rus'] = dict_orig['y_test']
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
-        pickle.dump(new_files, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(dict_new, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     copy_tree('outputs', args.transformed_data)
 
@@ -62,7 +57,6 @@ def parse_args():
 
     # add arguments
     parser.add_argument('--datasets-pkl', type=str, default='data')
-    parser.add_argument('--balancer-mode', type=str, default='None')
     parser.add_argument('--transformed_data', type=str, help='Path of output data')
 
     # parse args

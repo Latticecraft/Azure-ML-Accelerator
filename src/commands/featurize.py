@@ -21,7 +21,6 @@ def main(args):
             'unwanted': 'None',
             'replacements': 'None',
             'datatypes': 'None',
-            'balancer_mode': 'None',
             'remove_low_info': True,
             'remove_high_corr': True,
             'remove_high_nan': True,
@@ -141,8 +140,7 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/downsample.yaml',
                 'inputs': {
-                    'datasets_pkl': '${{parent.jobs.split_dataset_job.outputs.transformed_data}}',
-                    'balancer_mode': '${{parent.inputs.balancer_mode}}'
+                    'datasets_pkl': '${{parent.jobs.split_dataset_job.outputs.transformed_data}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -197,7 +195,6 @@ def main(args):
                 'component': 'file:../../config/component/balancer.yaml',
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.outliers_job.outputs.transformed_data}}',
-                    'balancer_mode': '${{parent.inputs.balancer_mode}}',
                     'type': '${{parent.inputs.type}}'
                 },
                 'outputs': {
@@ -250,7 +247,7 @@ def main(args):
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
 
     if eval(args.run) == True:
-        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.balancer_mode={args.balancer_mode} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
         print(f'command: {command}')
 
         list_files = subprocess.run(command.split(' '))
@@ -273,7 +270,6 @@ def parse_args():
     parser.add_argument('--label', type=str, required=True)
     parser.add_argument('--replacements', type=str, required=False)
     parser.add_argument('--datatypes', type=str, required=False)
-    parser.add_argument('--balancer-mode', type=str, required=False)
     parser.add_argument('--separator', type=str, required=False)
     parser.add_argument('--unwanted', type=str, required=False)
     parser.add_argument('--web-hook', type=str, required=False)
