@@ -175,12 +175,12 @@ def main(args):
         os.remove(filepath)
 
 
-def get_tags(project):
-    auth = InteractiveLoginAuthentication(force=True)
-
-    ws = Workspace(subscription_id='83b4b5c6-51ae-4d5a-a7cf-63d20ffc2754',
-                resource_group='MLproduct23',
-                workspace_name='ltcml23',
+def get_tags(project, force_login):
+    auth = InteractiveLoginAuthentication(force=force_login)
+    
+    ws = Workspace(subscription_id='',
+                resource_group='',
+                workspace_name='',
                 auth=auth)
 
     dataset = Dataset.get_by_name(ws, name=f'{project}/gold')
@@ -203,6 +203,7 @@ def parse_args():
     parser.add_argument('--imputers', type=str, required=False, default='mean')
     parser.add_argument('--balancers', type=str, required=False, default='none')
     parser.add_argument('--num-trials', type=int, required=False, default=5)
+    parser.add_argument('--force-login', type=str, required=False, default='False')
     parser.add_argument('--web-hook', type=str, required=False)
     parser.add_argument('--next-pipeline', type=int, required=False)
     
@@ -218,7 +219,7 @@ if __name__ == '__main__':
     # parse args
     args = parse_args()
     if args.imputers == 'all' or args.balancers == 'all':
-        tags = get_tags(args.project)
+        tags = get_tags(args.project, eval(args.force_login))
         if args.imputers == 'all':
             args.imputers = tags['imputers']
         if args.balancers == 'all':
