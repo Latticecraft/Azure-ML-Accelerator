@@ -10,46 +10,80 @@ from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTENC, ADASYN
 def main(ctx):
     # read in data
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:
-        dict_files = pickle.load(f)
+        dict_orig = pickle.load(f)
 
-    if ctx['args'].type != 'Regression':
-        new_files = {}
-        for key in dict_files.keys():
-            if key.startswith('X_train'):
-                df_x = dict_files[key]
-                df_y = dict_files[key.replace('X','y')]
+    dict_new = {}
+    for key in dict_orig.keys():
+        if key.startswith('X_train') and 'none' in key:
+            df_x = dict_orig[key]
+            df_y = dict_orig[key.replace('X','y')]
 
-                # get categorical indices
-                cat_indices = [df_x.columns.get_loc(x) for x in df_x.columns if df_x[x].dtype.name == 'category' or df_x[x].dtype.name == 'boolean']
+            # get categorical indices
+            cat_indices = [df_x.columns.get_loc(x) for x in df_x.columns if df_x[x].dtype.name == 'category' or df_x[x].dtype.name == 'boolean']
 
-                # apply over-samplers
-                X_train_ros, y_train_ros = RandomOverSampler().fit_resample(df_x, df_y)
+            # do nothing
+            dict_new[get_key(key, 'X', 'train', 'none')] = df_x
+            dict_new[get_key(key, 'y', 'train', 'none')] = df_y
+            copy_valid_test(dict_new, dict_orig, key, 'none')
 
-                if len(cat_indices) > 0:
+            # apply over-samplers
+            X_train_ros, y_train_ros = RandomOverSampler().fit_resample(df_x, df_y)
+            dict_new[get_key(key, 'X', 'train', 'ros')] = X_train_ros
+            dict_new[get_key(key, 'y', 'train', 'ros')] = y_train_ros
+            copy_valid_test(dict_new, dict_orig, key, 'ros')
+
+            if len(cat_indices) > 0:
+                print('Categorical and/or boolean features found, using SMOTENC')
+                try:
                     X_train_smote, y_train_smote = SMOTENC(categorical_features=cat_indices).fit_resample(df_x, df_y)
-                else:
+                    dict_new[get_key(key, 'X', 'train', 'smote')] = X_train_smote
+                    dict_new[get_key(key, 'y', 'train', 'smote')] = y_train_smote
+                    copy_valid_test(dict_new, dict_orig, key, 'smote')
+                except:
+                    print('Error running SMOTE')
+            else:
+                print('Categorical and/or boolean features NOT found, using SMOTE/ADASYN')
+                try:
                     X_train_smote, y_train_smote = SMOTE().fit_resample(df_x, df_y)
+                    dict_new[get_key(key, 'X', 'train', 'smote')] = X_train_smote
+                    dict_new[get_key(key, 'y', 'train', 'smote')] = y_train_smote
+                    copy_valid_test(dict_new, dict_orig, key, 'smote')
+                except:
+                    print('Error running SMOTE')
 
-                new_files[key+'_none'] = df_x
-                new_files[key.replace('X','y')+'_none'] = df_y
-                new_files[key+'_ros'] = X_train_ros
-                new_files[key.replace('X','y')+'_ros'] = y_train_ros
-                new_files[key+'_smote'] = X_train_smote
-                new_files[key.replace('X','y')+'_smote'] = y_train_smote
+                try:
+                    X_train_adasyn, y_train_adasyn = ADASYN().fit_resample(df_x, df_y)
+                    dict_new[get_key(key, 'X', 'train', 'adasyn')] = X_train_adasyn
+                    dict_new[get_key(key, 'y', 'train', 'adasyn')] = y_train_adasyn
+                    copy_valid_test(dict_new, dict_orig, key, 'adasyn')
+                except:
+                    print('Error running ADASYN')
 
-        # add back in test validation set
-        for key in dict_files.keys():
-            if key.startswith('X_valid') or key.startswith('X_test'):
-                new_files['{}'.format(key)] = dict_files[key]
-                new_files['{}'.format(key.replace('X','y'))] = dict_files[key.replace('X','y')]
-    else:
-        new_files = dict_files
+        elif key.startswith('X_train') and '_rus' in key:
+            dict_new[get_key(key, 'X', 'train', 'rus')] = dict_orig[get_key(key, 'X', 'train', 'rus')]
+            dict_new[get_key(key, 'y', 'train', 'rus')] = dict_orig[get_key(key, 'y', 'train', 'rus')]
+            dict_new[get_key(key, 'X', 'valid', 'rus')] = dict_orig[get_key(key, 'X', 'valid', 'rus')]
+            dict_new[get_key(key, 'y', 'valid', 'rus')] = dict_orig[get_key(key, 'y', 'valid', 'rus')]
+            dict_new[get_key(key, 'X', 'test', 'rus')] = dict_orig[get_key(key, 'X', 'test', 'rus')]
+            dict_new[get_key(key, 'y', 'test', 'rus')] = dict_orig[get_key(key, 'y', 'test', 'rus')]
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
-        pickle.dump(new_files, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(dict_new, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     copy_tree('outputs', args.transformed_data)
+
+
+def copy_valid_test(dict_new, dict_orig, key, balancer):
+    dict_new[get_key(key, 'X', 'valid', balancer)] = dict_orig[get_key(key, 'X', 'valid')]
+    dict_new[get_key(key, 'y', 'valid', balancer)] = dict_orig[get_key(key, 'y', 'valid')]
+    dict_new[get_key(key, 'X', 'test', balancer)] = dict_orig[get_key(key, 'X', 'test')]
+    dict_new[get_key(key, 'y', 'test', balancer)] = dict_orig[get_key(key, 'y', 'test')]
+
+
+def get_key(key, type, fold, balancer='none'):
+    arr = key.split('_')
+    return f'{type}_{fold}_{arr[2]}_{balancer}'
 
 
 def start(args):

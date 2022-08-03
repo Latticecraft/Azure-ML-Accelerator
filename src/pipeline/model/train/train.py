@@ -19,17 +19,12 @@ def main(ctx):
 
     print(f'dict_files.keys(): {dict_files.keys()}')
 
-    if ctx['args'].type != 'Regression':
-        X_train = dict_files[f'X_train_{args.imputer}_{args.balancer}']
-        y_train = dict_files[f'y_train_{args.imputer}_{args.balancer}']
-    else:
-        X_train = dict_files[f'X_train_{args.imputer}']
-        y_train = dict_files[f'y_train_{args.imputer}']
-
-    X_valid = dict_files[f'X_valid_{args.imputer}']
-    y_valid = dict_files[f'y_valid_{args.imputer}']
-    X_test = dict_files[f'X_test_{args.imputer}']
-    y_test = dict_files[f'y_test_{args.imputer}']
+    X_train = dict_files[f'X_train_{args.imputer}_{args.balancer}']
+    y_train = dict_files[f'y_train_{args.imputer}_{args.balancer}']
+    X_valid = dict_files[f'X_valid_{args.imputer}_{args.balancer}']
+    y_valid = dict_files[f'y_valid_{args.imputer}_{args.balancer}']
+    X_test = dict_files[f'X_test_{args.imputer}_{args.balancer}']
+    y_test = dict_files[f'y_test_{args.imputer}_{args.balancer}']
     
     # train model
     metrics = {}
@@ -80,8 +75,8 @@ def main(ctx):
         yhat = [x for x in clf.predict(X_test)]
 
         rmse = mean_squared_error(y_test[args.label].ravel(), yhat, squared=False)
-        metrics['root_mean_squared_error'] = rmse
-        mlflow.log_metric('root_mean_squared_error', rmse)
+        metrics['neg_root_mean_squared_error'] = -rmse
+        mlflow.log_metric('neg_root_mean_squared_error', -rmse)
 
     # explanations
     client = ExplanationClient.from_run(ctx['run'])

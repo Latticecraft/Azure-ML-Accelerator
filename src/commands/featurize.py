@@ -21,8 +21,6 @@ def main(args):
             'unwanted': 'None',
             'replacements': 'None',
             'datatypes': 'None',
-            'downsample_enable': False,
-            'downsample_ratio': 0.1,
             'remove_low_info': True,
             'remove_high_corr': True,
             'remove_high_nan': True,
@@ -142,9 +140,7 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/downsample.yaml',
                 'inputs': {
-                    'datasets_pkl': '${{parent.jobs.split_dataset_job.outputs.transformed_data}}',
-                    'enable': '${{parent.inputs.downsample_enable}}',
-                    'ratio': '${{parent.inputs.downsample_ratio}}'
+                    'datasets_pkl': '${{parent.jobs.split_dataset_job.outputs.transformed_data}}'
                 },
                 'outputs': {
                     'transformed_data': {}

@@ -2,6 +2,8 @@ import os, argparse
 import subprocess
 import yaml
 
+from azureml.core import Workspace, Dataset
+from azureml.core.authentication import InteractiveLoginAuthentication
 from pathlib import PurePath
 
 
@@ -71,7 +73,7 @@ def main(args):
                     }
                 },
                 'objective': {
-                    'goal': 'minimize',
+                    'goal': 'maximize',
                     'primary_metric': '${{parent.inputs.primary_metric}}'
                 },
                 'limits': {
@@ -173,6 +175,19 @@ def main(args):
         os.remove(filepath)
 
 
+def get_tags(project):
+    auth = InteractiveLoginAuthentication(force=True)
+
+    ws = Workspace(subscription_id='83b4b5c6-51ae-4d5a-a7cf-63d20ffc2754',
+                resource_group='MLproduct23',
+                workspace_name='ltcml23',
+                auth=auth)
+
+    dataset = Dataset.get_by_name(ws, name=f'{project}/gold')
+
+    return dataset.tags
+
+
 def parse_args():
     # setup arg parser
     parser = argparse.ArgumentParser()
@@ -202,6 +217,12 @@ def parse_args():
 if __name__ == '__main__':
     # parse args
     args = parse_args()
+    if args.imputers == 'all' or args.balancers == 'all':
+        tags = get_tags(args.project)
+        if args.imputers == 'all':
+            args.imputers = tags['imputers']
+        if args.balancers == 'all':
+            args.balancers = tags['balancers']
 
     # run main function
     main(args)

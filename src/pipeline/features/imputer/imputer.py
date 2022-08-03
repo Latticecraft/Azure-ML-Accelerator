@@ -11,31 +11,39 @@ from sklearn.impute import KNNImputer, SimpleImputer
 
 def main(ctx):
     # read in data
-    dict_files = pd.read_pickle(ctx['args'].datasets_pkl + '/datasets.pkl')
+    dict_orig = pd.read_pickle(ctx['args'].datasets_pkl + '/datasets.pkl')
 
-    new_files = {}
+    dict_new = {}
     for imputation in ['mean', 'knn']:
         if imputation == 'mean':
             imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
         else: # imputation == 'knn'
             imputer = KNNImputer(missing_values=np.nan, n_neighbors=5)
 
-        imputer.fit(dict_files['X_train'])
+        for key in dict_orig.keys():
+            if 'X_train' in key:
+                dict_new[get_key(key, 'X', 'train', imputation)] = pd.DataFrame(imputer.fit_transform(dict_orig[key]), columns=imputer.feature_names_in_)
+                dict_new[get_key(key, 'y', 'train', imputation)] = dict_orig[get_key(key, 'y', 'train')]
 
-        new_files[f'X_train_{imputation}'] = pd.DataFrame(imputer.transform(dict_files['X_train']), columns=imputer.feature_names_in_)
-        new_files[f'y_train_{imputation}'] = dict_files['y_train']
-        
-        new_files[f'X_valid_{imputation}'] = pd.DataFrame(imputer.transform(dict_files['X_valid']), columns=imputer.feature_names_in_)
-        new_files[f'y_valid_{imputation}'] = dict_files['y_valid']
+                dict_new[get_key(key, 'X', 'valid', imputation)] = pd.DataFrame(imputer.transform(dict_orig[key.replace("train", "valid")]), columns=imputer.feature_names_in_)
+                dict_new[get_key(key, 'y', 'valid', imputation)] = dict_orig[get_key(key, 'y', 'valid')]
 
-        new_files[f'X_test_{imputation}'] = pd.DataFrame(imputer.transform(dict_files['X_test']), columns=imputer.feature_names_in_)
-        new_files[f'y_test_{imputation}'] = dict_files['y_test']
+                dict_new[get_key(key, 'X', 'test', imputation)] = pd.DataFrame(imputer.transform(dict_orig[key.replace("train", "test")]), columns=imputer.feature_names_in_)
+                dict_new[get_key(key, 'y', 'test', imputation)] = dict_orig[get_key(key, 'y', 'test')]
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
-        pickle.dump(new_files, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(dict_new, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     copy_tree('outputs', args.transformed_data)
+
+
+def get_key(key, type, fold, imputer=None):
+    arr = key.split('_')
+    if imputer != None:
+        return f'{type}_{fold}_{imputer}_{arr[2]}'
+    else:
+        return f'{type}_{fold}_{arr[2]}'
 
 
 def start(args):

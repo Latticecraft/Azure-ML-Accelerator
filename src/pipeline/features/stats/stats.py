@@ -10,7 +10,7 @@ from distutils.dir_util import copy_tree
 def main(ctx):
     # read in data
     dict_files = pd.read_pickle(ctx['args'].datasets_pkl + '/datasets.pkl')
-    df = dict_files['X_train']
+    df = dict_files['X_train'] if 'X_train' in dict_files.keys() else dict_files['X_train_none']
 
     # log metrics
     metrics = {}
