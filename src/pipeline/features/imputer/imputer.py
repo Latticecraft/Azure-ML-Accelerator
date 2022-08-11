@@ -31,6 +31,9 @@ def main(ctx):
                 dict_new[get_key(key, 'X', 'test', imputation)] = pd.DataFrame(imputer.transform(dict_orig[key.replace("train", "test")]), columns=imputer.feature_names_in_)
                 dict_new[get_key(key, 'y', 'test', imputation)] = dict_orig[get_key(key, 'y', 'test')]
 
+                arr = key.split('_')
+                dict_new[f'imputer____{imputation}_{arr[2]}'] = imputer 
+
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
         pickle.dump(dict_new, f, protocol=pickle.HIGHEST_PROTOCOL)

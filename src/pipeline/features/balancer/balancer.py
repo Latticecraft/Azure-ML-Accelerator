@@ -27,7 +27,9 @@ def main(ctx):
             copy_valid_test(dict_new, dict_orig, key, 'none')
 
             # apply over-samplers
-            X_train_ros, y_train_ros = RandomOverSampler().fit_resample(df_x, df_y)
+            balancer = RandomOverSampler()
+            X_train_ros, y_train_ros = balancer.fit_resample(df_x, df_y)
+            dict_new['balancer____ros'] = balancer
             dict_new[get_key(key, 'X', 'train', 'ros')] = X_train_ros
             dict_new[get_key(key, 'y', 'train', 'ros')] = y_train_ros
             copy_valid_test(dict_new, dict_orig, key, 'ros')
@@ -35,7 +37,9 @@ def main(ctx):
             if len(cat_indices) > 0:
                 print('Categorical and/or boolean features found, using SMOTENC')
                 try:
-                    X_train_smote, y_train_smote = SMOTENC(categorical_features=cat_indices).fit_resample(df_x, df_y)
+                    balancer = SMOTENC(categorical_features=cat_indices)
+                    X_train_smote, y_train_smote = balancer.fit_resample(df_x, df_y)
+                    dict_new['balancer____smote'] = balancer
                     dict_new[get_key(key, 'X', 'train', 'smote')] = X_train_smote
                     dict_new[get_key(key, 'y', 'train', 'smote')] = y_train_smote
                     copy_valid_test(dict_new, dict_orig, key, 'smote')
@@ -44,7 +48,9 @@ def main(ctx):
             else:
                 print('Categorical and/or boolean features NOT found, using SMOTE/ADASYN')
                 try:
-                    X_train_smote, y_train_smote = SMOTE().fit_resample(df_x, df_y)
+                    balancer = SMOTE()
+                    X_train_smote, y_train_smote = balancer.fit_resample(df_x, df_y)
+                    dict_new['balancer____smote'] = balancer
                     dict_new[get_key(key, 'X', 'train', 'smote')] = X_train_smote
                     dict_new[get_key(key, 'y', 'train', 'smote')] = y_train_smote
                     copy_valid_test(dict_new, dict_orig, key, 'smote')
@@ -52,7 +58,9 @@ def main(ctx):
                     print('Error running SMOTE')
 
                 try:
-                    X_train_adasyn, y_train_adasyn = ADASYN().fit_resample(df_x, df_y)
+                    balancer = ADASYN()
+                    X_train_adasyn, y_train_adasyn = balancer.fit_resample(df_x, df_y)
+                    dict_new['balancer____adasyn'] = balancer
                     dict_new[get_key(key, 'X', 'train', 'adasyn')] = X_train_adasyn
                     dict_new[get_key(key, 'y', 'train', 'adasyn')] = y_train_adasyn
                     copy_valid_test(dict_new, dict_orig, key, 'adasyn')
@@ -66,6 +74,9 @@ def main(ctx):
             dict_new[get_key(key, 'y', 'valid', 'rus')] = dict_orig[get_key(key, 'y', 'valid', 'rus')]
             dict_new[get_key(key, 'X', 'test', 'rus')] = dict_orig[get_key(key, 'X', 'test', 'rus')]
             dict_new[get_key(key, 'y', 'test', 'rus')] = dict_orig[get_key(key, 'y', 'test', 'rus')]
+
+        elif key.startswith('imputer') or key.startswith('outliers'):
+            dict_new[key] = dict_orig[key]
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:

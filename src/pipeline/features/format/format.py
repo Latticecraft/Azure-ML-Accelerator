@@ -1,4 +1,5 @@
 import os, argparse, json
+import numpy as np
 import pandas as pd
 import urllib.parse
 import mlflow
@@ -29,6 +30,12 @@ def main(ctx):
     # encode label
     le = LabelEncoder()
     df[ctx['args'].label] = le.fit_transform(df[ctx['args'].label])
+
+    # replace inf with nan
+    cols = [x for x in df.columns if df[x].dtype.name == 'int64' or df[x].dtype.name == 'float64']
+    for x in cols:
+        df.loc[np.isfinite(df[x]) == False, x] = np.nan
+        
 
     # print debug
     print(df.dtypes)

@@ -15,7 +15,13 @@ def main(ctx):
     elif args.separator == 'tab':
         sep = '\t'
 
-    df = pd.read_csv(ctx['args'].input_csv, sep=sep)
+    # read csv and coerce float64 columns to float32
+    df = pd.read_csv(ctx['args'].input_csv, sep=sep, nrows=100)
+
+    float_cols = [c for c in df if df[c].dtype == "float64"]
+    float32_cols = {c: np.float32 for c in float_cols}
+
+    df = pd.read_csv(ctx['args'].input_csv, sep=sep, engine='c', dtype=float32_cols)
 
     # print env variables, first 5 rows and datatypes
     print( '\n'.join([f'{k}: {v}' for k, v in sorted(os.environ.items())]) )

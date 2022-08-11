@@ -22,7 +22,7 @@ def main(ctx):
 
     # get imputers/balancers for tagging
     df_files = pd.DataFrame(list(pd.Series(list(dict_files.keys())).str.split('_')),
-        columns=['type', 'fold', 'imputer', 'balancer'])
+        columns=['type', 'fold', 'imputer', 'balancer', 'col1', 'col2'])
 
     imputers = ','.join(np.unique(df_files['imputer']))
     balancers = ','.join(np.unique(df_files['balancer']))
