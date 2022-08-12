@@ -10,6 +10,7 @@ from azureml.interpret import ExplanationClient
 from interpret.ext.blackbox import TabularExplainer
 from pathlib import Path
 from sklearn.metrics import classification_report, mean_squared_error
+from sklearn.pipeline import Pipeline
 
 
 def main(ctx):
@@ -56,6 +57,7 @@ def main(ctx):
                     metrics['{}_{}'.format(k1,k2).replace(' ', '-')] = v2
                     mlflow.log_metric('{}_{}'.format(k1,k2).replace(' ', '-'), v2)
     else:
+        
         clf = lgb.LGBMRegressor(num_leaves=int(args.num_leaves), 
                             max_depth=int(args.max_depth), 
                             colsample_bytree=args.colsample_bytree,
@@ -67,12 +69,19 @@ def main(ctx):
                             force_row_wise=True,
                             verbose=2)
 
-        clf.fit(X_train, y_train[args.label].ravel(),
-            eval_set=[(X_valid, y_valid[args.label].ravel())],
-            eval_metric='l2',
-            callbacks=[lgb.early_stopping(10)])
+        pipeline = Pipeline(steps=[
+            ('imputer', dict_files[f'imputer____{args.imputer}_{args.balancer}']),
+            ('outliers', dict_files[f'outliers____{args.imputer}_{args.balancer}']),
+            ('balancer', dict_files[f'balancer____{args.imputer}_{args.balancer}']),
+            ('model', clf)
+        ])
 
-        yhat = [x for x in clf.predict(X_test)]
+        pipeline.fit(X_train, y_train[args.label].ravel(),
+            model__eval_set=[(X_valid, y_valid[args.label].ravel())],
+            model__eval_metric='l2',
+            model__callbacks=[lgb.early_stopping(10)])
+
+        yhat = [x for x in pipeline.predict(X_test)]
 
         rmse = mean_squared_error(y_test[args.label].ravel(), yhat, squared=False)
         metrics['neg_root_mean_squared_error'] = -rmse

@@ -15,6 +15,8 @@ def main(ctx):
     dict_new = {}
     for key in dict_orig.keys():
         if key.startswith('X_train') and 'none' in key:
+            arr = key.split('_')
+
             df_x = dict_orig[key]
             df_y = dict_orig[key.replace('X','y')]
 
@@ -29,7 +31,7 @@ def main(ctx):
             # apply over-samplers
             balancer = RandomOverSampler()
             X_train_ros, y_train_ros = balancer.fit_resample(df_x, df_y)
-            dict_new['balancer____ros'] = balancer
+            dict_new[f'balancer____{arr[2]}_ros'] = balancer
             dict_new[get_key(key, 'X', 'train', 'ros')] = X_train_ros
             dict_new[get_key(key, 'y', 'train', 'ros')] = y_train_ros
             copy_valid_test(dict_new, dict_orig, key, 'ros')
@@ -39,7 +41,7 @@ def main(ctx):
                 try:
                     balancer = SMOTENC(categorical_features=cat_indices)
                     X_train_smote, y_train_smote = balancer.fit_resample(df_x, df_y)
-                    dict_new['balancer____smote'] = balancer
+                    dict_new[f'balancer____{arr[2]}_smote'] = balancer
                     dict_new[get_key(key, 'X', 'train', 'smote')] = X_train_smote
                     dict_new[get_key(key, 'y', 'train', 'smote')] = y_train_smote
                     copy_valid_test(dict_new, dict_orig, key, 'smote')
@@ -50,7 +52,7 @@ def main(ctx):
                 try:
                     balancer = SMOTE()
                     X_train_smote, y_train_smote = balancer.fit_resample(df_x, df_y)
-                    dict_new['balancer____smote'] = balancer
+                    dict_new[f'balancer____{arr[2]}_smote'] = balancer
                     dict_new[get_key(key, 'X', 'train', 'smote')] = X_train_smote
                     dict_new[get_key(key, 'y', 'train', 'smote')] = y_train_smote
                     copy_valid_test(dict_new, dict_orig, key, 'smote')
@@ -60,7 +62,7 @@ def main(ctx):
                 try:
                     balancer = ADASYN()
                     X_train_adasyn, y_train_adasyn = balancer.fit_resample(df_x, df_y)
-                    dict_new['balancer____adasyn'] = balancer
+                    dict_new[f'balancer____{arr[2]}_adasyn'] = balancer
                     dict_new[get_key(key, 'X', 'train', 'adasyn')] = X_train_adasyn
                     dict_new[get_key(key, 'y', 'train', 'adasyn')] = y_train_adasyn
                     copy_valid_test(dict_new, dict_orig, key, 'adasyn')
