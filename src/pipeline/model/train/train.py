@@ -13,6 +13,27 @@ from sklearn.metrics import classification_report, mean_squared_error
 from sklearn.pipeline import Pipeline
 
 
+def get_xformed_data(dict_files, imputer, balancer):
+    b = 'none' if balancer != 'rus' else 'rus'
+    dict_new = {
+        'X_train': dict_files[f'X_train_{b}'],
+        'y_train': dict_files[f'y_train_{b}'],
+        'X_valid': dict_files[f'X_valid_{b}'],
+        'y_valid': dict_files[f'y_valid_{b}'],
+        'X_test': dict_files[f'X_test_{b}'],
+        'y_test': dict_files[f'y_test_{b}']
+    }
+
+    dict_new['X_train'] = dict_files[f'imputer____{imputer}_{b}'].fit_transform(dict_new['X_train'])
+    dict_new['X_valid'] = dict_files[f'imputer____{imputer}_{b}'].transform(dict_new['X_valid'])
+    dict_new['X_test'] = dict_files[f'imputer____{imputer}_{b}'].transform(dict_new['X_test'])
+
+    if balancer != 'rus' and balancer != 'none':
+        dict_new['X_train'], dict_new['y_train'] = dict_files[f'balancer____{imputer}_{balancer}'].fit_resample(dict_new['X_train'], dict_new['y_train'])
+    
+    return dict_new
+
+
 def main(ctx):
     # read in data
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as handle:
@@ -20,13 +41,8 @@ def main(ctx):
 
     print(f'dict_files.keys(): {dict_files.keys()}')
 
-    X_train = dict_files[f'X_train_{args.imputer}_{args.balancer}']
-    y_train = dict_files[f'y_train_{args.imputer}_{args.balancer}']
-    X_valid = dict_files[f'X_valid_{args.imputer}_{args.balancer}']
-    y_valid = dict_files[f'y_valid_{args.imputer}_{args.balancer}']
-    X_test = dict_files[f'X_test_{args.imputer}_{args.balancer}']
-    y_test = dict_files[f'y_test_{args.imputer}_{args.balancer}']
-    
+    dict_files = get_xformed_data(dict_files, args.imputer, args.balancer)
+
     # train model
     metrics = {}
     if ctx['args'].type != 'Regression':
@@ -41,16 +57,16 @@ def main(ctx):
                             force_row_wise=True,
                             verbose=2)
 
-        clf.fit(X_train, y_train[args.label].ravel(),
-            eval_set=[(X_valid, y_valid[args.label].ravel())],
+        clf.fit(dict_files['X_train'], dict_files['y_train'][args.label].ravel(),
+            eval_set=[(dict_files['X_valid'], dict_files['y_valid'][args.label].ravel())],
             eval_metric='logloss',
             callbacks=[lgb.early_stopping(10)])
 
-        yhat_proba = [x[1] for x in clf.predict_proba(X_test)]
+        yhat_proba = [x[1] for x in clf.predict_proba(dict_files['X_test'])]
         yhat = [1 if x >= 0.5 else 0 for x in yhat_proba]
 
         # log metrics
-        report = classification_report(y_test[args.label].ravel(), yhat, output_dict=True)
+        report = classification_report(dict_files['y_test'][args.label].ravel(), yhat, output_dict=True)
         for k1,v1 in report.items():
             if isinstance(v1, dict):
                 for k2,v2 in v1.items():
@@ -69,28 +85,24 @@ def main(ctx):
                             force_row_wise=True,
                             verbose=2)
 
-        pipeline = Pipeline(steps=[
-            ('imputer', dict_files[f'imputer____{args.imputer}_{args.balancer}']),
-            ('outliers', dict_files[f'outliers____{args.imputer}_{args.balancer}']),
-            ('balancer', dict_files[f'balancer____{args.imputer}_{args.balancer}']),
-            ('model', clf)
-        ])
+        b = 'none' if args.balancer != 'rus' else 'rus'
+        
 
-        pipeline.fit(X_train, y_train[args.label].ravel(),
-            model__eval_set=[(X_valid, y_valid[args.label].ravel())],
-            model__eval_metric='l2',
-            model__callbacks=[lgb.early_stopping(10)])
+        clf.fit(dict_files['X_train'], dict_files['y_train'][args.label].ravel(),
+            eval_set=[(dict_files['X_valid'], dict_files['y_valid'][args.label].ravel())],
+            eval_metric='l2',
+            callbacks=[lgb.early_stopping(10)])
 
-        yhat = [x for x in pipeline.predict(X_test)]
+        yhat = [x for x in clf.predict(dict_files['X_test'])]
 
-        rmse = mean_squared_error(y_test[args.label].ravel(), yhat, squared=False)
+        rmse = mean_squared_error(dict_files['y_test'][args.label].ravel(), yhat, squared=False)
         metrics['neg_root_mean_squared_error'] = -rmse
         mlflow.log_metric('neg_root_mean_squared_error', -rmse)
 
     # explanations
     client = ExplanationClient.from_run(ctx['run'])
-    explainer = TabularExplainer(clf, X_train)
-    global_explanation = explainer.explain_global(X_test)
+    explainer = TabularExplainer(clf, dict_files['X_train'])
+    global_explanation = explainer.explain_global(dict_files['X_test'])
     client.upload_model_explanation(global_explanation, comment='global explanation: all features')
 
     
@@ -103,15 +115,6 @@ def main(ctx):
 
     # log model
     joblib.dump(clf, 'outputs/model.pkl')
-
-    dict_files = {
-        'X_train': X_train,
-        'y_train': y_train,
-        'X_valid': X_valid,
-        'y_valid': y_valid,
-        'X_test': X_test,
-        'y_test': y_test
-    }
 
     with open('outputs/datasets.pkl', 'wb') as handle:
         pickle.dump(dict_files, handle, protocol=pickle.HIGHEST_PROTOCOL)

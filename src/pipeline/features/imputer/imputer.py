@@ -13,30 +13,31 @@ def main(ctx):
     # read in data
     dict_orig = pd.read_pickle(ctx['args'].datasets_pkl + '/datasets.pkl')
 
-    dict_new = {}
+    #dict_new = {}
     for imputation in ['mean', 'knn']:
         if imputation == 'mean':
             imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
         else: # imputation == 'knn'
             imputer = KNNImputer(missing_values=np.nan, n_neighbors=5)
 
-        for key in dict_orig.keys():
+        keys = [x for x in dict_orig.keys()]
+        for key in keys:
             if 'X_train' in key:
-                dict_new[get_key(key, 'X', 'train', imputation)] = pd.DataFrame(imputer.fit_transform(dict_orig[key]), columns=imputer.feature_names_in_)
-                dict_new[get_key(key, 'y', 'train', imputation)] = dict_orig[get_key(key, 'y', 'train')]
+                imputer.fit_transform(dict_orig[key])
+#                dict_new[get_key(key, 'y', 'train', imputation)] = dict_orig[get_key(key, 'y', 'train')]
 
-                dict_new[get_key(key, 'X', 'valid', imputation)] = pd.DataFrame(imputer.transform(dict_orig[key.replace("train", "valid")]), columns=imputer.feature_names_in_)
-                dict_new[get_key(key, 'y', 'valid', imputation)] = dict_orig[get_key(key, 'y', 'valid')]
+#                dict_new[get_key(key, 'X', 'valid', imputation)] = pd.DataFrame(imputer.transform(dict_orig[key.replace("train", "valid")]), columns=imputer.feature_names_in_)
+#                dict_new[get_key(key, 'y', 'valid', imputation)] = dict_orig[get_key(key, 'y', 'valid')]
 
-                dict_new[get_key(key, 'X', 'test', imputation)] = pd.DataFrame(imputer.transform(dict_orig[key.replace("train", "test")]), columns=imputer.feature_names_in_)
-                dict_new[get_key(key, 'y', 'test', imputation)] = dict_orig[get_key(key, 'y', 'test')]
+#                dict_new[get_key(key, 'X', 'test', imputation)] = pd.DataFrame(imputer.transform(dict_orig[key.replace("train", "test")]), columns=imputer.feature_names_in_)
+#                dict_new[get_key(key, 'y', 'test', imputation)] = dict_orig[get_key(key, 'y', 'test')]
 
                 arr = key.split('_')
-                dict_new[f'imputer____{imputation}_{arr[2]}'] = imputer 
+                dict_orig[f'imputer____{imputation}_{arr[2]}'] = imputer 
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
-        pickle.dump(dict_new, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(dict_orig, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     copy_tree('outputs', args.transformed_data)
 

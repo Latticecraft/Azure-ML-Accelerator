@@ -180,21 +180,21 @@ def main(args):
                     'transformed_data': {}
                 }
             },
-            'outliers_job': {
-                'type': 'command',
-                'component': 'file:../../config/component/outliers.yaml',
-                'inputs': {
-                    'datasets_pkl': '${{parent.jobs.impute_job.outputs.transformed_data}}'
-                },
-                'outputs': {
-                    'transformed_data': {}
-                }
-            },
+            #'outliers_job': {
+            #    'type': 'command',
+            #    'component': 'file:../../config/component/outliers.yaml',
+            #    'inputs': {
+            #        'datasets_pkl': '${{parent.jobs.impute_job.outputs.transformed_data}}'
+            #    },
+            #    'outputs': {
+            #        'transformed_data': {}
+            #    }
+            #},
             'balancer_job': {
                 'type': 'command',
                 'component': 'file:../../config/component/balancer.yaml',
                 'inputs': {
-                    'datasets_pkl': '${{parent.jobs.outliers_job.outputs.transformed_data}}',
+                    'datasets_pkl': '${{parent.jobs.impute_job.outputs.transformed_data}}',
                     'type': '${{parent.inputs.type}}'
                 },
                 'outputs': {

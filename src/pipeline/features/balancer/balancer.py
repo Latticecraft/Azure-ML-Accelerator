@@ -5,6 +5,7 @@ import mlflow
 from azureml.core import Run
 from distutils.dir_util import copy_tree
 from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTENC, ADASYN
+from sklearn.pipeline import Pipeline
 
 
 def main(ctx):
@@ -12,77 +13,77 @@ def main(ctx):
     with open(ctx['args'].datasets_pkl + '/datasets.pkl', 'rb') as f:
         dict_orig = pickle.load(f)
 
-    dict_new = {}
-    for key in dict_orig.keys():
-        if key.startswith('X_train') and 'none' in key:
+    #dict_new = {}
+    keys = [x for x in dict_orig.keys()]
+    for key in keys:
+        if key.startswith('imputer'):
             arr = key.split('_')
+            if arr[5] != 'rus':
+                df_x = dict_orig['X_train_none']
 
-            df_x = dict_orig[key]
-            df_y = dict_orig[key.replace('X','y')]
+                # get categorical indices
+                cat_indices = [df_x.columns.get_loc(x) for x in df_x.columns if df_x[x].dtype.name == 'category' or df_x[x].dtype.name == 'boolean']
 
-            # get categorical indices
-            cat_indices = [df_x.columns.get_loc(x) for x in df_x.columns if df_x[x].dtype.name == 'category' or df_x[x].dtype.name == 'boolean']
+                df_x = dict_orig[f'imputer____{arr[4]}_none'].fit_transform(df_x)
+                df_y = dict_orig['y_train_none']
 
-            # do nothing
-            dict_new[get_key(key, 'X', 'train', 'none')] = df_x
-            dict_new[get_key(key, 'y', 'train', 'none')] = df_y
-            copy_valid_test(dict_new, dict_orig, key, 'none')
+                
 
-            # apply over-samplers
-            balancer = RandomOverSampler()
-            X_train_ros, y_train_ros = balancer.fit_resample(df_x, df_y)
-            dict_new[f'balancer____{arr[2]}_ros'] = balancer
-            dict_new[get_key(key, 'X', 'train', 'ros')] = X_train_ros
-            dict_new[get_key(key, 'y', 'train', 'ros')] = y_train_ros
-            copy_valid_test(dict_new, dict_orig, key, 'ros')
+                # apply over-samplers
+                balancer = RandomOverSampler()
+                balancer.fit_resample(df_x, df_y)
+                dict_orig[f'balancer____{arr[4]}_ros'] = balancer
+                #dict_new[get_key(key, 'X', 'train', 'ros')] = X_train_ros
+                #dict_new[get_key(key, 'y', 'train', 'ros')] = y_train_ros
+                #copy_valid_test(dict_new, dict_orig, key, 'ros')
 
-            if len(cat_indices) > 0:
-                print('Categorical and/or boolean features found, using SMOTENC')
-                try:
-                    balancer = SMOTENC(categorical_features=cat_indices)
-                    X_train_smote, y_train_smote = balancer.fit_resample(df_x, df_y)
-                    dict_new[f'balancer____{arr[2]}_smote'] = balancer
-                    dict_new[get_key(key, 'X', 'train', 'smote')] = X_train_smote
-                    dict_new[get_key(key, 'y', 'train', 'smote')] = y_train_smote
-                    copy_valid_test(dict_new, dict_orig, key, 'smote')
-                except:
-                    print('Error running SMOTE')
-            else:
-                print('Categorical and/or boolean features NOT found, using SMOTE/ADASYN')
-                try:
-                    balancer = SMOTE()
-                    X_train_smote, y_train_smote = balancer.fit_resample(df_x, df_y)
-                    dict_new[f'balancer____{arr[2]}_smote'] = balancer
-                    dict_new[get_key(key, 'X', 'train', 'smote')] = X_train_smote
-                    dict_new[get_key(key, 'y', 'train', 'smote')] = y_train_smote
-                    copy_valid_test(dict_new, dict_orig, key, 'smote')
-                except:
-                    print('Error running SMOTE')
+                if len(cat_indices) > 0:
+                    print('Categorical and/or boolean features found, using SMOTENC')
+                    try:
+                        balancer = SMOTENC(categorical_features=cat_indices)
+                        balancer.fit_resample(df_x, df_y)
+                        dict_orig[f'balancer____{arr[4]}_smote'] = balancer
+                        #dict_new[get_key(key, 'X', 'train', 'smote')] = X_train_smote
+                        #dict_new[get_key(key, 'y', 'train', 'smote')] = y_train_smote
+                        #copy_valid_test(dict_new, dict_orig, key, 'smote')
+                    except:
+                        print('Error running SMOTE')
+                else:
+                    print('Categorical and/or boolean features NOT found, using SMOTE/ADASYN')
+                    try:
+                        balancer = SMOTE()
+                        balancer.fit_resample(df_x, df_y)
+                        dict_orig[f'balancer____{arr[4]}_smote'] = balancer
+                        #dict_new[get_key(key, 'X', 'train', 'smote')] = X_train_smote
+                        #dict_new[get_key(key, 'y', 'train', 'smote')] = y_train_smote
+                        #copy_valid_test(dict_new, dict_orig, key, 'smote')
+                    except:
+                        print('Error running SMOTE')
 
-                try:
-                    balancer = ADASYN()
-                    X_train_adasyn, y_train_adasyn = balancer.fit_resample(df_x, df_y)
-                    dict_new[f'balancer____{arr[2]}_adasyn'] = balancer
-                    dict_new[get_key(key, 'X', 'train', 'adasyn')] = X_train_adasyn
-                    dict_new[get_key(key, 'y', 'train', 'adasyn')] = y_train_adasyn
-                    copy_valid_test(dict_new, dict_orig, key, 'adasyn')
-                except:
-                    print('Error running ADASYN')
+                    try:
+                        balancer = ADASYN()
+                        balancer.fit_resample(df_x, df_y)
+                        dict_orig[f'balancer____{arr[4]}_adasyn'] = balancer
+                        #dict_new[get_key(key, 'X', 'train', 'adasyn')] = X_train_adasyn
+                        #dict_new[get_key(key, 'y', 'train', 'adasyn')] = y_train_adasyn
+                        #copy_valid_test(dict_new, dict_orig, key, 'adasyn')
+                    except:
+                        print('Error running ADASYN')
 
-        elif key.startswith('X_train') and '_rus' in key:
-            dict_new[get_key(key, 'X', 'train', 'rus')] = dict_orig[get_key(key, 'X', 'train', 'rus')]
-            dict_new[get_key(key, 'y', 'train', 'rus')] = dict_orig[get_key(key, 'y', 'train', 'rus')]
-            dict_new[get_key(key, 'X', 'valid', 'rus')] = dict_orig[get_key(key, 'X', 'valid', 'rus')]
-            dict_new[get_key(key, 'y', 'valid', 'rus')] = dict_orig[get_key(key, 'y', 'valid', 'rus')]
-            dict_new[get_key(key, 'X', 'test', 'rus')] = dict_orig[get_key(key, 'X', 'test', 'rus')]
-            dict_new[get_key(key, 'y', 'test', 'rus')] = dict_orig[get_key(key, 'y', 'test', 'rus')]
+        #elif key.startswith('X_train') and '_rus' in key:
+        #    dict_new[get_key(key, 'X', 'train', 'rus')] = dict_orig[get_key(key, 'X', 'train', 'rus')]
+        #    dict_new[get_key(key, 'y', 'train', 'rus')] = dict_orig[get_key(key, 'y', 'train', 'rus')]
+        #    dict_new[get_key(key, 'X', 'valid', 'rus')] = dict_orig[get_key(key, 'X', 'valid', 'rus')]
+        #    dict_new[get_key(key, 'y', 'valid', 'rus')] = dict_orig[get_key(key, 'y', 'valid', 'rus')]
+        #    dict_new[get_key(key, 'X', 'test', 'rus')] = dict_orig[get_key(key, 'X', 'test', 'rus')]
+        #    dict_new[get_key(key, 'y', 'test', 'rus')] = dict_orig[get_key(key, 'y', 'test', 'rus')]
 
         elif key.startswith('imputer') or key.startswith('outliers'):
-            dict_new[key] = dict_orig[key]
+            dict_orig[key] = dict_orig[key]
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
-        pickle.dump(dict_new, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(dict_orig, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     copy_tree('outputs', args.transformed_data)
 
