@@ -22,10 +22,10 @@ def main(ctx):
 
     # get imputers/balancers for tagging
     df_files = pd.DataFrame(list(pd.Series(list(dict_files.keys())).str.split('_')),
-        columns=['type', 'fold', 'imputer', 'balancer'])
+        columns=['type', 'fold', 'col1', 'col2', 'imputer', 'balancer'])
 
-    imputers = ','.join(np.unique(df_files['imputer']))
-    balancers = ','.join(np.unique(df_files['balancer']))
+    imputers = ','.join([x for x in np.unique(df_files['imputer'].dropna()) if x != ''])
+    balancers = ','.join([x for x in np.unique(df_files['balancer'].dropna()) if x != ''])
 
     # register dataset
     datastore = Datastore.get(ctx['run'].experiment.workspace, 'output')

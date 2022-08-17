@@ -44,17 +44,30 @@ def main(ctx):
                 print('removing single value features...')
                 feature_matrix_train, feature_defs = ft.selection.remove_single_value_features(feature_matrix_train, feature_defs)
 
+            # apply transformations to validation set
             dataframes_valid = {
                 'main': (df_valid, 'ID')
             }
 
             feature_matrix_valid = ft.calculate_feature_matrix(dataframes=dataframes_valid, features=feature_defs)
 
+            # HACK: for some reason boolean is used instead of bool which makes downstream training fail... convert boolean to bool
+            bool_cols1 = {x: 'int' for x in feature_matrix_valid.columns if feature_matrix_valid[x].dtype.name == 'boolean'}
+            bool_cols2 = {x: 'bool' for x in feature_matrix_valid.columns if feature_matrix_valid[x].dtype.name == 'boolean'}
+            feature_matrix_valid = feature_matrix_valid.astype(bool_cols1)
+            feature_matrix_valid = feature_matrix_valid.astype(bool_cols2)
+
             dataframes_test = {
                 'main': (df_test, 'ID')
             }
 
+            # apply transformations to test set
             feature_matrix_test = ft.calculate_feature_matrix(dataframes=dataframes_test, features=feature_defs)
+
+            bool_cols1 = {x: 'int' for x in feature_matrix_test.columns if feature_matrix_test[x].dtype.name == 'boolean'}
+            bool_cols2 = {x: 'bool' for x in feature_matrix_test.columns if feature_matrix_test[x].dtype.name == 'boolean'}
+            feature_matrix_test = feature_matrix_test.astype(bool_cols1)
+            feature_matrix_test = feature_matrix_test.astype(bool_cols2)
 
             # ensure columns are in same order as train
             feature_matrix_valid = feature_matrix_valid[list(feature_matrix_train.columns)]

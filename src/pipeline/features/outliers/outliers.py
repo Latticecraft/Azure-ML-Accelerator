@@ -7,6 +7,7 @@ from azureml.core import Run
 from distutils.dir_util import copy_tree
 from pathlib import Path
 from sklearn.ensemble import IsolationForest
+from sklearn.pipeline import Pipeline
 
 
 def main(ctx):
@@ -14,26 +15,48 @@ def main(ctx):
     dict_files = pd.read_pickle(ctx['args'].datasets_pkl + '/datasets.pkl')
 
     # determine possible outliers
-    for key in dict_files.keys():
-        if key.startswith('X_train'):
-            df_train = dict_files[key]
-            df_valid = dict_files[key.replace('train', 'valid')]
-            df_test = dict_files[key.replace('train', 'test')]
+    #dict_new = {}
+    keys = [x for x in dict_files.keys()]
+    for key in keys:
+        if key.startswith('imputer'):
+            arr = key.split('_')
+
+            df_train = dict_files['X_train_rus' if arr[5] == 'rus' else 'X_train_none']
+            #df_valid = dict_files[key.replace('train', 'valid')]
+            #df_test = dict_files[key.replace('train', 'test')]
             
             clf = IsolationForest(max_samples=100)
-            clf.fit(df_train)
-            df_train['OutlierIsoForest'] = clf.predict(df_train)
-            df_valid['OutlierIsoForest'] = clf.predict(df_valid)
-            df_test['OutlierIsoForest'] = clf.predict(df_test)
 
-            dict_files[key] = df_train
-            dict_files[key.replace('train', 'valid')] = df_valid
-            dict_files[key.replace('train', 'test')] = df_test
+            pipeline = Pipeline(steps=[
+                ('imputer', dict_files[f'imputer____{arr[4]}_{arr[5]}']),
+                ('outliers', clf)
+            ])
+
+            pipeline.fit(df_train)
+            #df_train['OutlierIsoForest'] = clf.predict(df_train)
+            #df_valid['OutlierIsoForest'] = clf.predict(df_valid)
+            #df_test['OutlierIsoForest'] = clf.predict(df_test)
+
+            #dict_new[key] = df_train
+            #dict_new[key.replace('train', 'valid')] = df_valid
+            #dict_new[key.replace('train', 'test')] = df_test
+
+            arr = key.split('_')
+            dict_files[f'outliers____{arr[4]}_{arr[5]}'] = clf
+
+    for key in dict_files.keys():
+        if key.startswith('imputer'):
+            dict_files[key] = dict_files[key]
+
+    for key in dict_files.keys():
+        if key.startswith('y'):
+            dict_files[key] = dict_files[key]
 
     # print dfs
     for key in dict_files.keys():
-        print(f'dict_files[{key}].head():')
-        print(dict_files[key].head())
+        if key.startswith('X_train'):
+            print(f'dict_new[{key}].head():')
+            print(dict_files[key].head())
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
@@ -45,7 +68,7 @@ def main(ctx):
 def start(args):
     os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
-    mlflow.autolog()
+    mlflow.autolog(disable=True)
     run = Run.get_context()
     tags = run.parent.get_tags()
     return {
