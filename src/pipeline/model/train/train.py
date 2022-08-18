@@ -55,7 +55,14 @@ def main(ctx):
         pickle.dump(dict_files, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     with open(Path(ctx['args'].train_artifacts) / 'best_run.json', 'w') as f:
-        json.dump({'runId': ctx['run'].id, 'sweepId': ctx['run'].parent.id, 'best_score': metrics[ctx['args'].primary_metric], 'label': ctx['args'].label}, f)
+        json.dump({
+            'runId': ctx['run'].id, 
+            'sweepId': ctx['run'].parent.id, 
+            'best_score': metrics[ctx['args'].primary_metric], 
+            'label': ctx['args'].label,
+            'imputer': ctx['args'].imputer,
+            'balancer': ctx['args'].balancer
+        }, f)
 
 
 def get_untrained_model(ctx):

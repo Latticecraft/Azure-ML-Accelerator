@@ -6,6 +6,7 @@ display_name: get_best_model
 is_deterministic: False
 command: >-
   python get_best_model.py
+  --datasets-pkl ${{inputs.datasets_pkl}}
   --sweep-name ${{inputs.sweep_name}}
   --train-artifacts ${{inputs.train_artifacts}} 
   --primary-metric ${{inputs.primary_metric}}
@@ -13,6 +14,8 @@ command: >-
 code: ../../src/pipeline/model/get_best_model
 environment: azureml:ltcftenv@latest
 inputs:
+  datasets_pkl:
+    type: path
   sweep_name:
     type: string
   train_artifacts:

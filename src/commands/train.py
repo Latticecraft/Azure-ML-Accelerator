@@ -95,6 +95,7 @@ def main(args):
                 'type': 'command',
                 'component': 'file:../../config/component/get_best_model.yaml',
                 'inputs': {
+                    'datasets_pkl': '${{parent.inputs.datasets_pkl}}',
                     'sweep_name': '${{parent.inputs.sweep_name}}',
                     'train_artifacts': '${{parent.jobs.sweep_job.outputs.train_artifacts}}',
                     'primary_metric': '${{parent.inputs.primary_metric}}'
