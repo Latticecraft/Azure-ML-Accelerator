@@ -7,6 +7,7 @@ import lightgbm as lgb
 
 from azureml.core.run import Run
 from azureml.interpret import ExplanationClient
+from distutils.dir_util import copy_tree
 from interpret.ext.blackbox import TabularExplainer
 from pathlib import Path
 from sklearn.metrics import classification_report, mean_squared_error
@@ -63,6 +64,8 @@ def main(ctx):
             'imputer': ctx['args'].imputer,
             'balancer': ctx['args'].balancer
         }, f)
+
+    copy_tree(ctx['args'].train_artifacts, 'outputs')
 
 
 def get_untrained_model(ctx):

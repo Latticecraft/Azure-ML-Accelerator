@@ -85,6 +85,9 @@ def main(ctx):
     for k,v in features_ranked.items():
         dict_new[k] = features_ranked[k]
 
+    # copy train artifacts to outputs
+    copy_tree(ctx['args'].train_artifacts, 'outputs')
+
     # copy outputs
     copy_tree('outputs', args.transformed_data)
 
