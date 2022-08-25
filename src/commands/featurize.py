@@ -60,7 +60,8 @@ def main(args):
                     'input_data': '${{parent.jobs.set_header_job.outputs.transformed_data}}',
                     'label': '${{parent.inputs.label}}',
                     'replacements': '${{parent.inputs.replacements}}',
-                    'datatypes': '${{parent.inputs.datatypes}}'
+                    'datatypes': '${{parent.inputs.datatypes}}',
+                    'type': '${{parent.inputs.type}}'
                 },
                 'outputs': {
                     'transformed_data': {}

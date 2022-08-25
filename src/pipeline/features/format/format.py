@@ -36,6 +36,9 @@ def main(ctx):
     for x in cols:
         df.loc[np.isfinite(df[x]) == False, x] = np.nan
         
+    # if classification, ensure label is int
+    if ctx['args'].type != 'Regression':
+        df[ctx['args'].label] = df[ctx['args'].label].astype(int)
 
     # print debug
     print(df.dtypes)
@@ -66,10 +69,11 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # add arguments
-    parser.add_argument('--input-data', type=str, default='data/transformed.csv')
+    parser.add_argument('--input-data', type=str, default='data/datasets.pkl')
     parser.add_argument('--label', type=str, default='None')
     parser.add_argument('--replacements', type=str, default='None')
     parser.add_argument('--datatypes', type=str, default='None')
+    parser.add_argument('--type', type=str, default='None')
     parser.add_argument('--transformed_data', type=str, default='data')
 
     # parse args

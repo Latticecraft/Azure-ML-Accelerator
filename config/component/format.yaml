@@ -21,6 +21,8 @@ inputs:
     type: string
   datatypes:
     type: string
+  type:
+    type: string
 outputs:
   transformed_data:
     type: path
