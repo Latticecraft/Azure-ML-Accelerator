@@ -230,12 +230,14 @@ def parse_args():
 if __name__ == '__main__':
     # parse args
     args = parse_args()
-    if args.imputers == 'all' or args.balancers == 'all':
-        variant = ''
-        variant = variant + '_downsample' if eval(args.downsample) == True else variant
-        variant = variant + '_dropbools' if eval(args.drop_bools) == True else variant
-        args.variant = variant
 
+    # determine variant of gold dataset to use
+    variant = ''
+    variant = variant + '_downsample' if eval(args.downsample) == True else variant
+    variant = variant + '_dropbools' if eval(args.drop_bools) == True else variant
+    args.variant = variant
+
+    if args.imputers == 'all' or args.balancers == 'all':
         tags = get_tags(args.project, variant, eval(args.force_login))
         if args.imputers == 'all':
             args.imputers = tags['imputers']
