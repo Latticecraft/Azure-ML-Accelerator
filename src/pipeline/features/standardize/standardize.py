@@ -18,7 +18,7 @@ def main(ctx):
     cols = list(df_X.columns)
     numeric_cols = [x for x in df_X.columns if 'float' in df_X[x].dtype.name or 'int' in df_X[x].dtype.name]
 
-    ct = make_column_transformer((StandardScaler(), numeric_cols))
+    ct = make_column_transformer((StandardScaler(), numeric_cols), remainder='passthrough')
     dict_files['X_train'] = pd.DataFrame(ct.fit_transform(df_X), columns=cols)
     dict_files['X_valid'] = pd.DataFrame(ct.transform(dict_files['X_valid']), columns=cols)
     dict_files['X_test'] = pd.DataFrame(ct.transform(dict_files['X_test']), columns=cols)
