@@ -4,7 +4,8 @@ import mlflow
 
 from azureml.core import Run
 from distutils.dir_util import copy_tree
-from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTENC, ADASYN
+from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTENC, SMOTEN, ADASYN, BorderlineSMOTE, KMeansSMOTE, SVMSMOTE
+from imblearn.under_sampling import ClusterCentroids
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path)
@@ -20,40 +21,68 @@ def main(ctx):
     for key in keys:
         if key.startswith('imputer'):
             arr = key.split('_')
-            if arr[5] != 'rus':
-                df_x = dict_files['X_train_none']
-                cat_indices = [df_x.columns.get_loc(x) for x in df_x.columns if df_x[x].dtype.name == 'category' or df_x[x].dtype.name == 'boolean']
+            df_x = dict_files['X_train']
+            cat_indices = [df_x.columns.get_loc(x) for x in df_x.columns if df_x[x].dtype.name == 'category' or df_x[x].dtype.name == 'bool']
 
-                df_x, df_y = data.get('train', arr[4])
+            df_x, df_y = data.get('train', arr[4])
 
-                # apply over-samplers
-                balancer = RandomOverSampler()
-                balancer.fit_resample(df_x, df_y)
-                dict_files[f'balancer____{arr[4]}_ros'] = balancer
+            # apply over-samplers
+            balancer = RandomOverSampler()
+            balancer.fit_resample(df_x, df_y)
+            dict_files[f'balancer____{arr[4]}_ros'] = balancer
 
-                if len(cat_indices) > 0:
-                    print('Categorical and/or boolean features found, using SMOTENC')
-                    try:
-                        balancer = SMOTENC(categorical_features=cat_indices)
-                        balancer.fit_resample(df_x, df_y)
-                        dict_files[f'balancer____{arr[4]}_smote'] = balancer
-                    except:
-                        print('Error running SMOTE')
-                else:
-                    print('Categorical and/or boolean features NOT found, using SMOTE/ADASYN')
-                    try:
-                        balancer = SMOTE()
-                        balancer.fit_resample(df_x, df_y)
-                        dict_files[f'balancer____{arr[4]}_smote'] = balancer
-                    except:
-                        print('Error running SMOTE')
+            if len(cat_indices) == len(df_x.columns):
+                print('All categorical/boolean features found, using SMOTEN')
+                try:
+                    balancer = SMOTEN(categorical_features=cat_indices)
+                    balancer.fit_resample(df_x, df_y)
+                    dict_files[f'balancer____{arr[4]}_smote'] = balancer
+                except:
+                    print('Error running SMOTEN')
+            elif len(cat_indices) > 0:
+                print('Mix of continuous and categorical/boolean features found, using SMOTENC')
+                try:
+                    balancer = SMOTENC(categorical_features=cat_indices)
+                    balancer.fit_resample(df_x, df_y)
+                    dict_files[f'balancer____{arr[4]}_smote'] = balancer
+                except:
+                    print('Error running SMOTENC')
+            else: # all continuous
+                print('Categorical and/or boolean features NOT found, using SMOTE/ADASYN')
+                try:
+                    balancer = SMOTE()
+                    balancer.fit_resample(df_x, df_y)
+                    dict_files[f'balancer____{arr[4]}_smote'] = balancer
+                except:
+                    print('Error running SMOTE')
 
-                    try:
-                        balancer = ADASYN()
-                        balancer.fit_resample(df_x, df_y)
-                        dict_files[f'balancer____{arr[4]}_adasyn'] = balancer
-                    except:
-                        print('Error running ADASYN')
+                try:
+                    balancer = ADASYN()
+                    balancer.fit_resample(df_x, df_y)
+                    dict_files[f'balancer____{arr[4]}_adasyn'] = balancer
+                except:
+                    print('Error running ADASYN')
+
+                try:
+                    balancer = BorderlineSMOTE()
+                    balancer.fit_resample(df_x, df_y)
+                    dict_files[f'balancer____{arr[4]}_borderlinesmote'] = balancer
+                except:
+                    print('Error running BorderlineSMOTE')
+
+                try:
+                    balancer = KMeansSMOTE()
+                    balancer.fit_resample(df_x, df_y)
+                    dict_files[f'balancer____{arr[4]}_kmeanssmote'] = balancer
+                except:
+                    print('Error running KMeansSMOTE')
+
+                try:
+                    balancer = SVMSMOTE()
+                    balancer.fit_resample(df_x, df_y)
+                    dict_files[f'balancer____{arr[4]}_svmsmote'] = balancer
+                except:
+                    print('Error running SVMSMOTE')
 
         elif key.startswith('imputer') or key.startswith('outliers'):
             dict_files[key] = dict_files[key]

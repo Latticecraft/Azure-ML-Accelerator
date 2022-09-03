@@ -26,6 +26,8 @@ def main(args):
             'type': 'None',
             'primary_metric': 'None',
             'source': 'None',
+            'downsample': False,
+            'drop_bools': False,
             'web_hook': 'None',
             'next_pipeline': 0
         },
@@ -125,7 +127,9 @@ def main(args):
                     'label': '${{parent.inputs.label}}',
                     'primary_metric': '${{parent.inputs.primary_metric}}',
                     'type': '${{parent.inputs.type}}',
-                    'source': '${{parent.inputs.source}}'
+                    'source': '${{parent.inputs.source}}',
+                    'downsample': '${{parent.inputs.downsample}}',
+                    'drop_bools': '${{parent.inputs.drop_bools}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -146,7 +150,9 @@ def main(args):
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.calibrate_job.outputs.transformed_data}}',
                     'project': '${{parent.inputs.project}}',
-                    'destination_folder': 'trainlog'
+                    'destination_folder': 'trainlog',
+                    'downsample': '${{parent.inputs.downsample}}',
+                    'drop_bools': '${{parent.inputs.drop_bools}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -166,7 +172,9 @@ def main(args):
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
     
     if eval(args.run) == True:
-        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.source={args.source} --set inputs.type={args.type} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path=azureml://datastores/output/paths/{args.project}/gold/ --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        
+        dataset_path = f'azureml://datastores/output/paths/{args.project}/gold/' if args.variant == '' else f'azureml://datastores/output/paths/{args.project}/gold{args.variant}/'
+        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.source={args.source} --set inputs.type={args.type} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path={dataset_path} --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.downsample={args.downsample} --set inputs.drop_bools={args.drop_bools} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
         print(f'command: {command}')
 
         list_files = subprocess.run(command.split(' '))
@@ -176,7 +184,7 @@ def main(args):
         os.remove(filepath)
 
 
-def get_tags(project, force_login):
+def get_tags(project, variant, force_login):
     auth = InteractiveLoginAuthentication(force=force_login)
     
     ws = Workspace(subscription_id='',
@@ -184,7 +192,8 @@ def get_tags(project, force_login):
                 workspace_name='',
                 auth=auth)
 
-    dataset = Dataset.get_by_name(ws, name=f'{project}/gold')
+    dataset_name = f'{project}/gold' if args.variant is None else f'{project}/gold{variant}'
+    dataset = Dataset.get_by_name(ws, name=dataset_name)
 
     return dataset.tags
 
@@ -205,6 +214,8 @@ def parse_args():
     parser.add_argument('--balancers', type=str, required=False, default='none')
     parser.add_argument('--num-trials', type=int, required=False, default=5)
     parser.add_argument('--force-login', type=str, required=False, default='False')
+    parser.add_argument('--downsample', type=str, default='False', required=False)
+    parser.add_argument('--drop-bools', type=str, default='False', required=False)
     parser.add_argument('--web-hook', type=str, required=False)
     parser.add_argument('--next-pipeline', type=int, required=False)
     
@@ -220,7 +231,12 @@ if __name__ == '__main__':
     # parse args
     args = parse_args()
     if args.imputers == 'all' or args.balancers == 'all':
-        tags = get_tags(args.project, eval(args.force_login))
+        variant = ''
+        variant = variant + '_downsample' if eval(args.downsample) == True else variant
+        variant = variant + '_dropbools' if eval(args.drop_bools) == True else variant
+        args.variant = variant
+
+        tags = get_tags(args.project, variant, eval(args.force_login))
         if args.imputers == 'all':
             args.imputers = tags['imputers']
         if args.balancers == 'all':

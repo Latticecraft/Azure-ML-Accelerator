@@ -9,6 +9,7 @@ command: >-
   --label ${{inputs.label}}
   --replacements ${{inputs.replacements}}
   --datatypes ${{inputs.datatypes}}
+  --drop-bools ${{inputs.drop_bools}}
   --transformed_data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/format
 environment: azureml:ltcftenv@latest
@@ -23,6 +24,8 @@ inputs:
     type: string
   type:
     type: string
+  drop_bools:
+    type: boolean
 outputs:
   transformed_data:
     type: path

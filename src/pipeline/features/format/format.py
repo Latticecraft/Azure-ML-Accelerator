@@ -40,6 +40,17 @@ def main(ctx):
     if ctx['args'].type != 'Regression':
         df[ctx['args'].label] = df[ctx['args'].label].astype(int)
 
+    # remove bools
+    if eval(ctx['args'].drop_bools) == True:
+        print('dropping bools...')
+        to_drop = []
+        for i in np.arange(len(df.columns)):
+            if 'int' not in str(df.dtypes[i]) and 'float' not in str(df.dtypes[i]):
+                to_drop.append(df.columns[i])
+
+        for col in to_drop:
+            del df[col]
+
     # print debug
     print(df.dtypes)
     if len(df) > 5:
@@ -74,6 +85,7 @@ def parse_args():
     parser.add_argument('--replacements', type=str, default='None')
     parser.add_argument('--datatypes', type=str, default='None')
     parser.add_argument('--type', type=str, default='None')
+    parser.add_argument('--drop-bools', type=str, default='False')
     parser.add_argument('--transformed_data', type=str, default='data')
 
     # parse args

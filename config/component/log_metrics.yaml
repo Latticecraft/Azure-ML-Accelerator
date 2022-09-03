@@ -8,6 +8,8 @@ command: >-
   --datasets-pkl ${{inputs.datasets_pkl}}
   --project ${{inputs.project}}
   --destination-folder ${{inputs.destination_folder}}
+  --downsample ${{inputs.downsample}}
+  --drop-bools ${{inputs.drop_bools}}
   --transformed-data ${{outputs.transformed_data}}
 code: ../../src/pipeline/common/log_metrics
 environment: azureml:ltcftenv@latest
@@ -18,6 +20,10 @@ inputs:
     type: string
   destination_folder:
     type: string
+  downsample:
+    type: boolean
+  drop_bools:
+    type: boolean
 outputs:
   transformed_data:
     type: path

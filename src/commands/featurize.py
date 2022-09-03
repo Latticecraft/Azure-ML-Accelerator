@@ -25,6 +25,8 @@ def main(args):
             'remove_high_corr': True,
             'remove_high_nan': True,
             'remove_single_val': True,
+            'downsample': False,
+            'drop_bools': False,
             'web_hook': 'None',
             'next_pipeline': 0
         },
@@ -61,7 +63,8 @@ def main(args):
                     'label': '${{parent.inputs.label}}',
                     'replacements': '${{parent.inputs.replacements}}',
                     'datatypes': '${{parent.inputs.datatypes}}',
-                    'type': '${{parent.inputs.type}}'
+                    'type': '${{parent.inputs.type}}',
+                    'drop_bools': '${{parent.inputs.drop_bools}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -171,11 +174,21 @@ def main(args):
                     'transformed_data': {}
                 }
             },
+            'standardize_job': {
+                'type': 'command',
+                'component': 'file:../../config/component/standardize.yaml',
+                'inputs': {
+                    'datasets_pkl': '${{parent.jobs.stats_job.outputs.transformed_data}}'
+                },
+                'outputs': {
+                    'transformed_data': {}
+                }
+            },
             'impute_job': {
                 'type': 'command',
                 'component': 'file:../../config/component/impute.yaml',
                 'inputs': {
-                    'datasets_pkl': '${{parent.jobs.stats_job.outputs.transformed_data}}'
+                    'datasets_pkl': '${{parent.jobs.standardize_job.outputs.transformed_data}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -197,7 +210,9 @@ def main(args):
                 'component': 'file:../../config/component/register_dataset.yaml',
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.balancer_job.outputs.transformed_data}}',
-                    'project': '${{parent.inputs.project}}'
+                    'project': '${{parent.inputs.project}}',
+                    'downsample': '${{parent.inputs.downsample}}',
+                    'drop_bools': '${{parent.inputs.drop_bools}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -218,7 +233,9 @@ def main(args):
                 'inputs': {
                     'datasets_pkl': '${{parent.jobs.balancer_job.outputs.transformed_data}}',
                     'project': '${{parent.inputs.project}}',
-                    'destination_folder': 'runinfo'
+                    'destination_folder': 'runinfo',
+                    'downsample': '${{parent.inputs.downsample}}',
+                    'drop_bools': '${{parent.inputs.drop_bools}}'
                 },
                 'outputs': {
                     'transformed_data': {}
@@ -238,7 +255,7 @@ def main(args):
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
 
     if eval(args.run) == True:
-        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.drop_bools={args.drop_bools} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
         print(f'command: {command}')
 
         list_files = subprocess.run(command.split(' '))
@@ -263,6 +280,8 @@ def parse_args():
     parser.add_argument('--datatypes', type=str, required=False)
     parser.add_argument('--separator', type=str, required=False)
     parser.add_argument('--unwanted', type=str, required=False)
+    parser.add_argument('--downsample', type=str, default='False', required=False)
+    parser.add_argument('--drop-bools', type=str, default='False', required=False)
     parser.add_argument('--web-hook', type=str, required=False)
     parser.add_argument('--next-pipeline', type=int, required=False)
     

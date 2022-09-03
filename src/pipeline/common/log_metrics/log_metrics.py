@@ -17,6 +17,8 @@ def main(ctx):
     jm['experiment'] = ctx['run'].experiment.name
     jm['runId'] = ctx['data'].tags['mlflow.parentRunId']
     jm['runDate'] = datetime.utcnow()
+    jm['downsample'] = ctx['args'].downsample
+    jm['drop_bools'] = ctx['args'].drop_bools
 
     # iterate across sibling jobs
     parent_run = Run.get(ctx['run'].experiment.workspace, ctx['data'].tags['mlflow.parentRunId'])
@@ -84,6 +86,9 @@ def parse_args():
     parser.add_argument('--datasets-pkl', type=str, default='data')
     parser.add_argument('--project', type=str)
     parser.add_argument('--destination-folder', type=str)
+    parser.add_argument('--downsample', type=str, default='False')
+    parser.add_argument('--drop-bools', type=str, default='False')
+
     parser.add_argument('--transformed-data', type=str, help='Path of output data')
 
     # parse args

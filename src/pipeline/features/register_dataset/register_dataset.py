@@ -28,11 +28,25 @@ def main(ctx):
     balancers = ','.join([x for x in np.unique(df_files['balancer'].dropna()) if x != ''])
 
     # register dataset
+    variant = ''
+    variant = variant + '_downsample' if eval(ctx['args'].downsample) == True else variant
+    variant = variant + '_dropbools' if eval(ctx['args'].drop_bools) == True else variant
+
     datastore = Datastore.get(ctx['run'].experiment.workspace, 'output')
+    
     ds = Dataset.File.upload_directory(src_dir='outputs',
-        target=DataPath(datastore, f'{ctx["args"].project}/gold'),
+        target=DataPath(datastore, f'{ctx["args"].project}/gold{variant}'),
         overwrite=True)
-    ds.register(ctx['run'].experiment.workspace, f'{ctx["args"].project}/gold', create_new_version=True, tags={'imputers': imputers, 'balancers': balancers})
+
+    ds.register(ctx['run'].experiment.workspace, 
+        f'{ctx["args"].project}/gold{variant}', 
+        create_new_version=True, 
+        tags={
+            'imputers': imputers, 
+            'balancers': balancers, 
+            'downsample': ctx['args'].downsample, 
+            'drop_bools': ctx['args'].drop_bools
+        })
 
 
 def start(args):
@@ -55,6 +69,8 @@ def parse_args():
     # add arguments
     parser.add_argument('--datasets-pkl', type=str, default='data')
     parser.add_argument('--project', type=str, default='None')
+    parser.add_argument('--downsample', type=str, default='False')
+    parser.add_argument('--drop-bools', type=str, default='False')
     parser.add_argument('--transformed-data', type=str, default='data')
 
     # parse args
