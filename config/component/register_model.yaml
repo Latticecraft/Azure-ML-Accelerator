@@ -11,6 +11,8 @@ command: >-
   --primary-metric ${{inputs.primary_metric}}
   --type ${{inputs.type}}
   --source ${{inputs.source}}
+  --downsample ${{inputs.downsample}}
+  --drop-bools ${{inputs.drop_bools}}
   --transformed-data ${{outputs.transformed_data}}
 code: ../../src/pipeline/model/register_model
 environment: azureml:ltcftenv@latest
@@ -27,6 +29,10 @@ inputs:
     type: string
   source:
     type: string
+  downsample:
+    type: boolean
+  drop_bools:
+    type: boolean
 outputs:
   transformed_data:
     type: path

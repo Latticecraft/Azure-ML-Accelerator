@@ -14,6 +14,8 @@ def main(ctx):
                         'primary_metric': ctx['args'].primary_metric,
                         'type': ctx['args'].type,
                         'source': ctx['args'].source,
+                        'downsample': eval(ctx['args'].downsample),
+                        'drop_bools': eval(ctx['args'].drop_bools),
                         'best_score': ctx['tags']['best_score']
                     },
                     description='',
@@ -46,6 +48,8 @@ def parse_args():
     parser.add_argument('--primary-metric', type=str, default='None')
     parser.add_argument('--type', type=str, default='None')
     parser.add_argument('--source', type=str, default='None')
+    parser.add_argument('--downsample', type=str, default='False')
+    parser.add_argument('--drop-bools', type=str, default='False')
 
     # outputs
     parser.add_argument('--transformed-data', type=str)

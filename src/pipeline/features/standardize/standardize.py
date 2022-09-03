@@ -1,30 +1,32 @@
 import os, argparse
-import pickle
-import numpy as np
 import pandas as pd
+import pickle
 import mlflow
 
 from azureml.core import Run
 from distutils.dir_util import copy_tree
-from sklearn.impute import KNNImputer, SimpleImputer
+from pathlib import Path
+from sklearn.compose import make_column_transformer
+from sklearn.preprocessing import StandardScaler
 
 
 def main(ctx):
     # read in data
     dict_files = pd.read_pickle(ctx['args'].datasets_pkl + '/datasets.pkl')
 
-    for imputation in ['mean', 'knn']:
-        if imputation == 'mean':
-            imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
-        else: # imputation == 'knn'
-            imputer = KNNImputer(missing_values=np.nan, n_neighbors=5)
-            imputer.fit_transform(dict_files['X_train'])
-            dict_files[f'imputer____{imputation}'] = imputer 
+    df_X = dict_files['X_train']
+    cols = list(df_X.columns)
+    numeric_cols = [x for x in df_X.columns if 'float' in df_X[x].dtype.name or 'int' in df_X[x].dtype.name]
+
+    ct = make_column_transformer((StandardScaler(), numeric_cols))
+    dict_files['X_train'] = pd.DataFrame(ct.fit_transform(df_X), columns=cols)
+    dict_files['X_valid'] = pd.DataFrame(ct.transform(dict_files['X_valid']), columns=cols)
+    dict_files['X_test'] = pd.DataFrame(ct.transform(dict_files['X_test']), columns=cols)
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
         pickle.dump(dict_files, f, protocol=pickle.HIGHEST_PROTOCOL)
-
+    
     copy_tree('outputs', args.transformed_data)
 
 
@@ -47,7 +49,7 @@ def parse_args():
 
     # add arguments
     parser.add_argument('--datasets-pkl', type=str, default='data')
-    parser.add_argument('--transformed_data', type=str, help='Path of output data')
+    parser.add_argument('--transformed-data', type=str, default='data')
 
     # parse args
     args = parser.parse_args()
