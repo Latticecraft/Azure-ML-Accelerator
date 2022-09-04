@@ -97,7 +97,7 @@ def main(ctx):
 def start(args):
     os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
-    mlflow.autolog()
+    mlflow.autolog(log_models=False)
     run = Run.get_context()
     tags = run.parent.get_tags()
     return {
