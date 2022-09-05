@@ -1,11 +1,12 @@
 import sys, os, argparse
-import pickle
 import mlflow
+import pickle
+import time
 
 from azureml.core import Run
 from distutils.dir_util import copy_tree
-from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTENC, SMOTEN, ADASYN, BorderlineSMOTE, KMeansSMOTE, SVMSMOTE
-from imblearn.under_sampling import ClusterCentroids
+from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTENC, SMOTEN, ADASYN, BorderlineSMOTE, KMeansSMOTE
+from imblearn.under_sampling import NearMiss, NeighbourhoodCleaningRule, OneSidedSelection
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path)
@@ -27,63 +28,108 @@ def main(ctx):
             df_x, df_y = data.get('train', arr[4])
 
             # apply over-samplers
+            start = time.time()
             balancer = RandomOverSampler()
             balancer.fit_resample(df_x, df_y)
             dict_files[f'balancer____{arr[4]}_ros'] = balancer
+            end = time.time()
+            print(f'RandomOverSampler elapsed time: {end - start}')
 
             if len(cat_indices) == len(df_x.columns):
                 print('All categorical/boolean features found, using SMOTEN')
                 try:
+                    start = time.time()
                     balancer = SMOTEN(categorical_features=cat_indices)
                     balancer.fit_resample(df_x, df_y)
                     dict_files[f'balancer____{arr[4]}_smote'] = balancer
+                    end = time.time()
+                    print(f'SMOTEN elapsed time: {end - start}')
                 except:
                     print('Error running SMOTEN')
             elif len(cat_indices) > 0:
                 print('Mix of continuous and categorical/boolean features found, using SMOTENC')
                 try:
+                    start = time.time()
                     balancer = SMOTENC(categorical_features=cat_indices)
                     balancer.fit_resample(df_x, df_y)
                     dict_files[f'balancer____{arr[4]}_smote'] = balancer
+                    end = time.time()
+                    print(f'SMOTENC elapsed time: {end - start}')
                 except:
                     print('Error running SMOTENC')
             else: # all continuous
                 print('Categorical and/or boolean features NOT found, using SMOTE/ADASYN')
                 try:
+                    start = time.time()
                     balancer = SMOTE()
                     balancer.fit_resample(df_x, df_y)
                     dict_files[f'balancer____{arr[4]}_smote'] = balancer
+                    end = time.time()
+                    print(f'SMOTE elapsed time: {end - start}')
                 except:
                     print('Error running SMOTE')
 
                 try:
+                    start = time.time()
                     balancer = ADASYN()
                     balancer.fit_resample(df_x, df_y)
                     dict_files[f'balancer____{arr[4]}_adasyn'] = balancer
+                    end = time.time()
+                    print(f'ADASYN elapsed time: {end - start}')
                 except:
                     print('Error running ADASYN')
 
                 try:
+                    start = time.time()
                     balancer = BorderlineSMOTE()
                     balancer.fit_resample(df_x, df_y)
                     dict_files[f'balancer____{arr[4]}_borderlinesmote'] = balancer
+                    end = time.time()
+                    print(f'BorderlineSMOTE elapsed time: {end - start}')
                 except:
                     print('Error running BorderlineSMOTE')
 
                 try:
+                    start = time.time()
                     balancer = KMeansSMOTE()
                     balancer.fit_resample(df_x, df_y)
                     dict_files[f'balancer____{arr[4]}_kmeanssmote'] = balancer
+                    end = time.time()
+                    print(f'KMeansSMOTE elapsed time: {end - start}')
                 except:
                     print('Error running KMeansSMOTE')
 
+                # undersamplers
                 try:
-                    balancer = SVMSMOTE()
+                    start = time.time()
+                    balancer = NearMiss(version=1)
                     balancer.fit_resample(df_x, df_y)
-                    dict_files[f'balancer____{arr[4]}_svmsmote'] = balancer
+                    dict_files[f'balancer____{arr[4]}_nearmiss1'] = balancer
+                    end = time.time()
+                    print(f'NearMiss elapsed time: {end - start}')
                 except:
-                    print('Error running SVMSMOTE')
+                    print('Error running NearMiss')
 
+                try:
+                    start = time.time()
+                    balancer =  NeighbourhoodCleaningRule()
+                    balancer.fit_resample(df_x, df_y)
+                    dict_files[f'balancer____{arr[4]}_neighborhoodcleaningrule'] = balancer
+                    end = time.time()
+                    print(f'NeighbourhoodCleaningRule elapsed time: {end - start}')
+                except:
+                    print('Error running NeighbourhoodCleaningRule')
+                
+                try:
+                    start = time.time()
+                    balancer =  OneSidedSelection()
+                    balancer.fit_resample(df_x, df_y)
+                    dict_files[f'balancer____{arr[4]}_onesidedselection'] = balancer
+                    end = time.time()
+                    print(f'OneSidedSelection elapsed time: {end - start}')
+                except:
+                    print('Error running OneSidedSelection')
+                
         elif key.startswith('imputer') or key.startswith('outliers'):
             dict_files[key] = dict_files[key]
 
@@ -97,7 +143,7 @@ def main(ctx):
 def start(args):
     os.makedirs('outputs', exist_ok=True)
     mlflow.start_run()
-    mlflow.autolog(log_models=False)
+    mlflow.autolog(disable=True)
     run = Run.get_context()
     tags = run.parent.get_tags()
     return {
@@ -114,6 +160,7 @@ def parse_args():
     # add arguments
     parser.add_argument('--datasets-pkl', type=str, default='data')
     parser.add_argument('--type', type=str)
+
     parser.add_argument('--transformed_data', type=str, help='Path of output data')
 
     # parse args
