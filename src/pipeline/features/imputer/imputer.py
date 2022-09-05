@@ -18,8 +18,9 @@ def main(ctx):
             imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
         else: # imputation == 'knn'
             imputer = KNNImputer(missing_values=np.nan, n_neighbors=5)
-            imputer.fit_transform(dict_files['X_train'])
-            dict_files[f'imputer____{imputation}'] = imputer 
+            
+        imputer.fit_transform(dict_files['X_train'])
+        dict_files[f'imputer____{imputation}'] = imputer 
 
     # save data to outputs
     with open('outputs/datasets.pkl', 'wb') as f:
