@@ -112,23 +112,44 @@ def main(ctx):
 
                 try:
                     start = time.time()
-                    balancer =  NeighbourhoodCleaningRule()
+                    balancer = NearMiss(version=2)
                     balancer.fit_resample(df_x, df_y)
-                    dict_files[f'balancer____{arr[4]}_neighborhoodcleaningrule'] = balancer
+                    dict_files[f'balancer____{arr[4]}_nearmiss2'] = balancer
                     end = time.time()
-                    print(f'NeighbourhoodCleaningRule elapsed time: {end - start}')
+                    print(f'NearMiss elapsed time: {end - start}')
                 except:
-                    print('Error running NeighbourhoodCleaningRule')
-                
+                    print('Error running NearMiss')
+
                 try:
                     start = time.time()
-                    balancer =  OneSidedSelection()
+                    balancer = NearMiss(version=3)
                     balancer.fit_resample(df_x, df_y)
-                    dict_files[f'balancer____{arr[4]}_onesidedselection'] = balancer
+                    dict_files[f'balancer____{arr[4]}_nearmiss3'] = balancer
                     end = time.time()
-                    print(f'OneSidedSelection elapsed time: {end - start}')
+                    print(f'NearMiss elapsed time: {end - start}')
                 except:
-                    print('Error running OneSidedSelection')
+                    print('Error running NearMiss')
+
+                if eval(ctx['args'].enable_slow) == True:
+                    try:
+                        start = time.time()
+                        balancer =  NeighbourhoodCleaningRule()
+                        balancer.fit_resample(df_x, df_y)
+                        dict_files[f'balancer____{arr[4]}_neighborhoodcleaningrule'] = balancer
+                        end = time.time()
+                        print(f'NeighbourhoodCleaningRule elapsed time: {end - start}')
+                    except:
+                        print('Error running NeighbourhoodCleaningRule')
+                    
+                    try:
+                        start = time.time()
+                        balancer =  OneSidedSelection()
+                        balancer.fit_resample(df_x, df_y)
+                        dict_files[f'balancer____{arr[4]}_onesidedselection'] = balancer
+                        end = time.time()
+                        print(f'OneSidedSelection elapsed time: {end - start}')
+                    except:
+                        print('Error running OneSidedSelection')
                 
         elif key.startswith('imputer') or key.startswith('outliers'):
             dict_files[key] = dict_files[key]
@@ -160,6 +181,7 @@ def parse_args():
     # add arguments
     parser.add_argument('--datasets-pkl', type=str, default='data')
     parser.add_argument('--type', type=str)
+    parser.add_argument('--enable-slow', type=str, default='False')
 
     parser.add_argument('--transformed_data', type=str, help='Path of output data')
 
