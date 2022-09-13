@@ -29,8 +29,8 @@ def main(ctx):
 
     # register dataset
     variant = ''
-    variant = variant + '_downsample' if eval(ctx['args'].downsample) == True else variant
-    variant = variant + '_dropbools' if eval(ctx['args'].drop_bools) == True else variant
+    variant = variant + '-downsample' if eval(ctx['args'].downsample) == True else variant
+    variant = variant + '-dropbools' if eval(ctx['args'].drop_bools) == True else variant
 
     datastore = Datastore.get(ctx['run'].experiment.workspace, 'output')
     
@@ -39,7 +39,7 @@ def main(ctx):
         overwrite=True)
 
     ds.register(ctx['run'].experiment.workspace, 
-        f'{ctx["args"].project}/gold{variant}', 
+        f'{ctx["args"].project}_gold{variant}', 
         create_new_version=True, 
         tags={
             'imputers': imputers, 
