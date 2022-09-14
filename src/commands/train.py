@@ -184,20 +184,6 @@ def main(args):
         os.remove(filepath)
 
 
-def get_tags(project, variant, force_login):
-    auth = InteractiveLoginAuthentication(force=force_login)
-    
-    ws = Workspace(subscription_id='',
-                resource_group='',
-                workspace_name='',
-                auth=auth)
-
-    dataset_name = f'{project}/gold' if args.variant is None else f'{project}/gold{variant}'
-    dataset = Dataset.get_by_name(ws, name=dataset_name)
-
-    return dataset.tags
-
-
 def parse_args():
     # setup arg parser
     parser = argparse.ArgumentParser()
@@ -236,13 +222,6 @@ if __name__ == '__main__':
     variant = variant + '-downsample' if eval(args.downsample) == True else variant
     variant = variant + '-dropbools' if eval(args.drop_bools) == True else variant
     args.variant = variant
-
-    if args.imputers == 'all' or args.balancers == 'all':
-        tags = get_tags(args.project, variant, eval(args.force_login))
-        if args.imputers == 'all':
-            args.imputers = tags['imputers']
-        if args.balancers == 'all':
-            args.balancers = tags['balancers']
 
     # run main function
     main(args)
