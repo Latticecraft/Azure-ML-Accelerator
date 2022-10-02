@@ -1,6 +1,7 @@
-import os, argparse
+import argparse, io, os, sys
+import selectors
 import subprocess
-import yaml
+import json, yaml
 
 from pathlib import PurePath
 
@@ -255,14 +256,49 @@ def main(args):
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
 
     if eval(args.run) == True:
-        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.type={args.type} --set inputs.input_csv.path=azureml://datastores/input/paths/{args.project}/{args.input} --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.drop_bools={args.drop_bools} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
-        print(f'command: {command}')
-
-        list_files = subprocess.run(command.split(' '))
-        print('The exit code was: %d' % list_files.returncode)
+        cmd = f'az ml job create --file {filepath} --stream --set inputs.project={args.project} --set inputs.type={args.type} --set inputs.input_csv.path={args.input} --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.drop_bools={args.drop_bools} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        print(f'Running command: {cmd}')
+        
+        run_command(cmd)
 
         # remove temp file
         os.remove(filepath)
+
+
+def run_command(cmd):
+    process = subprocess.Popen(cmd.split(' '), bufsize=1, stdout = subprocess.PIPE, stderr = subprocess.STDOUT, universal_newlines = True)
+    
+    # Create callback function for process output
+    buf = io.StringIO()
+
+    # Register callback for an "available for read" event from subprocess' stdout stream
+    selector = selectors.DefaultSelector()
+    selector.register(process.stdout, selectors.EVENT_READ, None)
+
+    # Loop until subprocess is terminated
+    summary_started = False
+    while process.poll() is None:
+        # Wait for events and handle them with their registered callbacks
+        events = selector.select()
+        for key, mask in events:
+            line = key.fileobj.readline()
+
+            if 'Execution Summary' in line:
+                summary_started = True
+
+            if summary_started == False:
+                buf.write(line)
+                sys.stdout.write(line)
+
+    # Get process return code
+    return_code = process.wait()
+    selector.close()
+
+    success = (return_code == 0)
+
+    # Store buffered output
+    output = buf.getvalue()
+    buf.close()
 
 
 def parse_args():

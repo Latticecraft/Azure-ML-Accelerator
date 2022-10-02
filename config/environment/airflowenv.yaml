@@ -1,0 +1,9 @@
+name: airflowenv
+dependencies:
+  - gcc_linux-64
+  - gxx_linux-64
+  - python=3.7
+  - pip
+  - pip:
+      - apache-airflow
+

@@ -19,7 +19,7 @@ command: >-
     --learning-rate ${{inputs.learning_rate}}
     --train-artifacts ${{outputs.train_artifacts}}
 code: ../../src/pipeline/model/train
-environment: azureml:ltcftenv@latest
+environment: azureml:batch_training@latest
 inputs:
   datasets_pkl:
     type: path

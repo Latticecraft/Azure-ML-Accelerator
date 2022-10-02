@@ -1,4 +1,4 @@
-name: ltcftenv
+name: lgbmtrainingenv
 dependencies:
   - gcc_linux-64
   - gxx_linux-64

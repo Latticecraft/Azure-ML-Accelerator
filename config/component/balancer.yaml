@@ -9,7 +9,7 @@ command: >-
   --type ${{inputs.type}}
   --transformed_data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/balancer
-environment: azureml:ltcftenv@latest
+environment: azureml:batch_training@latest
 inputs:
   datasets_pkl:
     type: path

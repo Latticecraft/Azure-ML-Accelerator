@@ -12,7 +12,7 @@ command: >-
   --primary-metric ${{inputs.primary_metric}}
   --transformed-data ${{outputs.transformed_data}}
 code: ../../src/pipeline/model/get_best_model
-environment: azureml:ltcftenv@latest
+environment: azureml:batch_training@latest
 inputs:
   datasets_pkl:
     type: path

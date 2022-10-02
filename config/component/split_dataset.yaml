@@ -8,7 +8,7 @@ command: >-
   --datasets-pkl ${{inputs.datasets_pkl}}
   --transformed_data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/split_dataset
-environment: azureml:ltcftenv@latest
+environment: azureml:batch_training@latest
 inputs:
   datasets_pkl:
     type: path

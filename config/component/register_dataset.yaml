@@ -11,7 +11,7 @@ command: >-
   --drop-bools ${{inputs.drop_bools}}
   --transformed-data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/register_dataset
-environment: azureml:ltcftenv@latest
+environment: azureml:batch_training@latest
 inputs:
   datasets_pkl:
     type: path

@@ -172,9 +172,8 @@ def main(args):
         yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
     
     if eval(args.run) == True:
-        
-        dataset_path = f'azureml://datastores/output/paths/{args.project}-gold/' if args.variant == '' else f'azureml://datastores/output/paths/{args.project}-gold{args.variant}/'
-        command = f'az ml job create --file {filepath} --web --set inputs.project={args.project} --set inputs.source={args.source} --set inputs.type={args.type} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path={dataset_path} --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.downsample={args.downsample} --set inputs.drop_bools={args.drop_bools} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
+        dataset_path = f'azureml://datastores/output/paths/{args.project}/gold/' if args.variant == '' else f'azureml://datastores/output/paths/{args.project}/gold{args.variant}/'
+        command = f'az ml job create --file {filepath} --stream --set inputs.project={args.project} --set inputs.source={args.source} --set inputs.type={args.type} --set inputs.primary_metric={args.primary_metric} --set inputs.datasets_pkl.path={dataset_path} --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.downsample={args.downsample} --set inputs.drop_bools={args.drop_bools} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
         print(f'command: {command}')
 
         list_files = subprocess.run(command.split(' '))

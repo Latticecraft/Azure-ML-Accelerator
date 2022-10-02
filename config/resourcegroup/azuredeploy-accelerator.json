@@ -437,25 +437,6 @@
             }
         },
         {
-            "type": "Microsoft.MachineLearningServices/workspaces/computes",
-            "name": "[concat(parameters('workspaceName'), '/', parameters('clusterName'))]",
-            "apiVersion": "2021-01-01",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaceName'))]"
-            ],
-            "properties": {
-                "computeType": "AmlCompute",
-                "properties": {
-                    "vmSize": "[parameters('vmSize')]",
-                    "scaleSettings": {
-                        "minNodeCount": "[parameters('minNodeCount')]",
-                        "maxNodeCount": "[parameters('maxNodeCount')]"
-                    }
-                }
-            }
-        },
-        {
             "type": "Microsoft.MachineLearningServices/workspaces/datastores",
             "apiVersion": "2021-03-01-preview",
             "name": "[concat(parameters('workspaceName'), '/input')]",
@@ -767,20 +748,6 @@
                 "functionsRuntimeScaleMonitoringEnabled": false,
                 "minimumElasticInstanceCount": 0,
                 "azureStorageAccounts": {}
-            }
-        },
-
-        {
-            "type": "Microsoft.Authorization/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
-            "name": "[parameters('roleNameGuid')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaceName'))]",
-                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'f6c7c914-8db3-469d-8ca1-694a8f32e121')]",
-                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')),'2019-08-01', 'full').identity.principalId]"
             }
         }
     ]

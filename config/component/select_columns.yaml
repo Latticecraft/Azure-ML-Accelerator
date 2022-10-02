@@ -10,7 +10,7 @@ command: >-
   --columns ${{inputs.columns}}
   --take_complement ${{inputs.take_complement}}
 code: ../../src/pipeline/features/select_columns
-environment: azureml:ltcftenv@latest
+environment: azureml:batch_training@latest
 inputs:
   input_data:
     type: path
