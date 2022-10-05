@@ -12,6 +12,12 @@ from airflow.utils.task_group import TaskGroup
 from datetime import datetime
 
 
+def login():
+    return BashOperator(
+        task_id='login',
+        bash_command='az login --service-principal -u {{var.value.appId}} -p {{var.value.password}} --tenant {{var.value.tenantId}}', 
+        start_date=datetime.now())
+
 def create_rg():
     return BashOperator(
         task_id='create_rg',
@@ -51,6 +57,12 @@ def create_env():
         bash_command='az ml environment create --name batch_training --version 1 --build-context {{var.value.repoPath}}/config/environment/ --dockerfile-path batch_training.Dockerfile --resource-group {{var.value.group}} --workspace-name {{task_instance.xcom_pull("get_workspace_name")}}',
         start_date=datetime.now())
 
+def build_env():
+    return BashOperator(
+        task_id='build_env',
+        bash_command='az ml job create --file {{var.value.repoPath}}/config/pipeline/buildenv.yaml --stream',
+        start_date=datetime.now())
+
 def create_compute():
     return BashOperator(
         task_id='create_compute',
@@ -61,12 +73,6 @@ def wait_for_compute():
     return BashOperator(
         task_id='wait_for_compute',
         bash_command='until az ml compute show --name cpu-cluster --query provisioning_state --resource-group {{var.value.group}} --workspace-name {{task_instance.xcom_pull("get_workspace_name")}} | grep "Succeeded"; do sleep 1; done',
-        start_date=datetime.now())
-
-def build_env():
-    return BashOperator(
-        task_id='build_env',
-        bash_command='az ml job create --file {{var.value.repoPath}}/config/pipeline/buildenv.yaml --resource-group {{var.value.group}} --workspace-name {{task_instance.xcom_pull("get_workspace_name")}}',
         start_date=datetime.now())
 
 def upload_data():
@@ -87,10 +93,16 @@ def run_featurize():
         bash_command='python {{var.value.repoPath}}/src/commands/featurize.py --project Bank-Campaign --type Binary --input {{task_instance.xcom_pull("get_data_path")}} --label subscribed --replacements %7B%22yes%22%3Atrue%2C%22no%22%3Afalse%7D --datatypes %7B%22default%22%3A%22bool%22%2C%22housing%22%3A%22bool%22%2C%22loan%22%3A%22bool%22%7D --separator semicolon --filename featurize-gen.yaml --run True',
         start_date=datetime.now())
 
+def run_train():
+    return BashOperator(
+        task_id='train',
+        bash_command='python {{var.value.repoPath}}/src/commands/train.py --project Bank-Campaign --type Binary --primary-metric weighted-avg_f1-score --label subscribed --source "https://www.kaggle.com/datasets/pankajbhowmik/bank-marketing-campaign-subscriptions" --imputers knn --balancers ros --num-trials 5 --filename train-gen.yaml --run True',
+        start_date=datetime.now())
 
 # DAG
 @dag(schedule_interval='@daily', start_date=datetime(2021, 12, 1), catchup=False)
 def Featurize_Train_Basic():
+    login() >> \
     create_rg() >> \
     deploy_arm() >> \
     get_workspace_name() >> \
@@ -101,7 +113,8 @@ def Featurize_Train_Basic():
     build_env() >> \
     upload_data() >> \
     get_data_path() >> \
-    run_featurize()
+    run_featurize() >> \
+    run_train()
 
 # run main function
 dag1 = Featurize_Train_Basic()

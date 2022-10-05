@@ -6,7 +6,8 @@ from azureml.core import Environment, Run
 def main(args):
     run = Run.get_context()
     env = Environment(name='batch_training')
-    env.build(run.experiment.workspace).wait_for_completion()
+    build = env.build(run.experiment.workspace)
+    build.wait_for_completion()
 
 
 def parse_args():

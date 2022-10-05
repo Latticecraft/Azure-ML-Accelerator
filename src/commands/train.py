@@ -2,8 +2,6 @@ import os, argparse
 import subprocess
 import yaml
 
-from azureml.core import Workspace, Dataset
-from azureml.core.authentication import InteractiveLoginAuthentication
 from pathlib import PurePath
 
 
