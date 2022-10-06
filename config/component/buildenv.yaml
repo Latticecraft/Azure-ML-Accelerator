@@ -1,0 +1,9 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: buildenv
+display_name: build environment
+command: >-
+  python buildenv.py
+code: ../../src/pipeline/buildenv
+environment: azureml:AzureML-sklearn-0.24-ubuntu18.04-py37-cpu:21

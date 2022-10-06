@@ -10,7 +10,7 @@ command: >-
   --unwanted-csv ${{inputs.unwanted_csv}}/datasets.pkl
   --transformed_data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/package_files
-environment: azureml:ltcftenv@latest
+environment: azureml:lgbmholoenv@latest
 inputs:
   features_csv:
     type: path

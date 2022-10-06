@@ -1,0 +1,12 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+display_name: buildenv
+experiment_name: build environment
+jobs:
+  buildenv_job:
+    display_name: build
+    command: >-
+      python buildenv.py
+    code: ../../src/pipeline/buildenv
+    environment: azureml:AzureML-sklearn-0.24-ubuntu18.04-py37-cpu:21
+    compute: azureml:cpu-cluster
