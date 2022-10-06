@@ -12,22 +12,18 @@ Functionality will continue to be added along with more advanced scenarios inclu
 
 1. Setup local environment using: https://docs.microsoft.com/en-us/azure/machine-learning/how-to-configure-cli?tabs=public
 
-2. Clone the ML-Builder project: https://github.com/Latticecraft/ML-Builder
-~~~
-git clone https://github.com/Latticecraft/ML-Builder
-~~~
-3. Login to Azure CLI
+2. Login to Azure CLI
 ~~~
 az login
 ~~~
-4. Copy/paste the following snippet into a shell with the working directory set to the ML-Builder repo (replace RG_NAME with your desired Resource Group name):
+3. Copy/paste the following snippet into a shell with the working directory set to the ML-Builder repo (replace RG_NAME with your desired Resource Group name):
 ~~~
 RG_NAME="ReplaceWithNewName"
 az group create --name ${RG_NAME}
 ROLE_ID=$(az role definition list --query "[?roleName=='Contributor'].name | [0]" |  tr -d '"')
-az deployment group create --resource-group ${RG_NAME} --template-file ./config/azuredeploy.json --parameters roleDefinitionId=${ROLE_ID} imageLabel="2"
+az deployment group create --resource-group ${RG_NAME} --template-uri https://raw.githubusercontent.com/Latticecraft/ML-Builder/main/config/azuredeploy.json --parameters roleDefinitionId=${ROLE_ID} imageLabel="2"
 ~~~
-5. The above command will create the ML-Builder ACI container in the specified resource group which will start an Airflow DAG and fully provision the Azure ML Service environment with a sample dataset as well as run the Featurization and Train pipelines.  This process generally takes around 30 minutes.  Once completed you can clone this repository and customize as needed with a new dataset.
+4. The above command will create the ML-Builder ACI container in the specified resource group which will start an Airflow DAG and fully provision the Azure ML Service environment with a sample dataset as well as run the Featurization and Train pipelines.  This process generally takes around 30 minutes.  Once completed you can clone this repository and customize as needed with a new dataset.
 
 ## Folder structure
 
