@@ -16,7 +16,7 @@ Functionality will continue to be added along with more advanced scenarios inclu
 ~~~
 az login
 ~~~
-3. Copy/paste the following snippet into a shell with the working directory set to the ML-Builder repo (replace RG_NAME with your desired Resource Group name):
+3. Copy/paste the following snippet into a shell (replace RG_NAME with your desired Resource Group name):
 ~~~
 RG_NAME="ReplaceWithNewName"
 az group create --name ${RG_NAME}
