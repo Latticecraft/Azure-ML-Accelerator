@@ -12,37 +12,22 @@ Functionality will continue to be added along with more advanced scenarios inclu
 
 1. Setup local environment using: https://docs.microsoft.com/en-us/azure/machine-learning/how-to-configure-cli?tabs=public
 
-2. Create a new resource group, and from the command line cd to the project root.  Run:
+2. Clone the ML-Builder project: https://github.com/Latticecraft/ML-Builder
 ~~~
-python src/commands/setup_rg.py --resource-group [RG name]
+git clone https://github.com/Latticecraft/ML-Builder
 ~~~
-3. Set workspace defaults:
+3. Login to Azure CLI
 ~~~
-python src/commands/set_defaults.py
+az login
 ~~~
-4. To register a new remote environment run:
+4. Copy/paste the following snippet into a shell with the working directory set to the ML-Builder repo (replace RG_NAME with your desired Resource Group name):
 ~~~
-python src/commands/setup_env.py
+RG_NAME="ReplaceWithNewName"
+az group create --name ${RG_NAME}
+ROLE_ID=$(az role definition list --query "[?roleName=='Contributor'].name | [0]" |  tr -d '"')
+az deployment group create --resource-group ${RG_NAME} --template-file ./config/azuredeploy.json --parameters roleDefinitionId=${ROLE_ID} imageLabel="2"
 ~~~
-5. Upload the input dataset to a new folder in the input container in the blob storage with ltcft prefix.  The name of the folder will be the name of the project and must be used in subsequent steps.
-
-6. Run Featurization pipeline:
-~~~
-python src/commands/featurize.py --project [Folder name]  --input [File name] --separator [comma|semicolon] --label [Column name of label] --type [Binary|Regression] --replacements [URL encode of Replacements JSON, optional] --datatypes [URL encode of DataTypes JSON, optional] --filename featurize-gen.yaml --run True
-~~~
-7. Run Train pipeline:
-~~~
-python src/commands/train.py --project [Folder name] --label [Column name of label] --type [Binary|Regression] --primary-metric [weighted-avg_f1-score|root_mean_squared_error]  --source [Source, optional] --filename train-gen.yaml --run True
-~~~
-
-### DevOps
-
-DevOps release pipelines are stored in config/devops which will run above commands.
-
-1. In Releases section, import Featurize.json and Train.json
-
-2. In Library section, create a new variable group with the following variables (values included here as an example):
-![VariableGroupExample](https://user-images.githubusercontent.com/1169037/177462462-802632ac-1b41-4721-9598-f61f42899f0a.png)
+5. The above command will create the ML-Builder ACI container in the specified resource group which will start an Airflow DAG and fully provision the Azure ML Service environment with a sample dataset as well as run the Featurization and Train pipelines.  This process generally takes around 30 minutes.  Once completed you can clone this repository and customize as needed with a new dataset.
 
 ## Folder structure
 
