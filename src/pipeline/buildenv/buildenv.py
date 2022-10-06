@@ -5,7 +5,7 @@ from azureml.core import Environment, Run
 
 def main(args):
     run = Run.get_context()
-    env = Environment(name='batch_training')
+    env = Environment(name='lgbmholoenv')
     build = env.build(run.experiment.workspace)
     build.wait_for_completion()
 
