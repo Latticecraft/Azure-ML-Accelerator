@@ -1,6 +1,6 @@
-FROM mcr.microsoft.com/azureml/openmpi3.1.2-cuda10.2-cudnn8-ubuntu18.04
-COPY lgbmtrainingenv.yaml .
-RUN conda env create -p /azureml-envs/lgbmtrainingenv -f lgbmtrainingenv.yaml
+FROM mcr.microsoft.com/azureml/curated/sklearn-0.24-ubuntu18.04-py37-cpu:44
+COPY lgbmholoenv.yaml .
+RUN conda env create -p /azureml-envs/lgbmholoenv -f lgbmholoenv.yaml
 RUN echo "===> Installing system dependencies..." && \
     BUILD_DEPS="curl unzip" && \
     apt-get update && apt-get install --no-install-recommends -y \
@@ -22,10 +22,10 @@ RUN echo "===> Installing system dependencies..." && \
     apt-get install -y -f && \
     rm $CHROME_SETUP
 ENV PATH="${PATH}:/opt/google/chrome"
-RUN echo "source activate lgbmtrainingenv" > ~/.bashrc
-ENV PATH /azureml-envs/lgbmtrainingenv/bin:$PATH
-ENV AZUREML_CONDA_ENVIRONMENT_PATH /azureml-envs/lgbmtrainingenv
-ENV LD_LIBRARY_PATH /azureml-envs/lgbmtrainingenv/lib:$LD_LIBRARY_PATH
-ENV CONDA_DEFAULT_ENV=lgbmtrainingenv CONDA_PREFIX=/azureml-envs/lgbmtrainingenv
+RUN echo "source activate lgbmholoenv" > ~/.bashrc
+ENV PATH /azureml-envs/lgbmholoenv/bin:$PATH
+ENV AZUREML_CONDA_ENVIRONMENT_PATH /azureml-envs/lgbmholoenv
+ENV LD_LIBRARY_PATH /azureml-envs/lgbmholoenv/lib:$LD_LIBRARY_PATH
+ENV CONDA_DEFAULT_ENV=lgbmholoenv CONDA_PREFIX=/azureml-envs/lgbmholoenv
 ENV AZUREML_ENVIRONMENT_IMAGE True
 CMD ["bash"]
