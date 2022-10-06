@@ -9,7 +9,7 @@ command: >-
   --url ${{inputs.url}}
   --param1 ${{inputs.param1}}
 code: ../../src/pipeline/common/web_hook
-environment: azureml:batch_training@latest
+environment: azureml:lgbmholoenv@latest
 inputs:
   datasets_pkl:
     type: path

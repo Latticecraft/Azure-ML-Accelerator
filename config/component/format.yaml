@@ -12,7 +12,7 @@ command: >-
   --drop-bools ${{inputs.drop_bools}}
   --transformed_data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/format
-environment: azureml:batch_training@latest
+environment: azureml:lgbmholoenv@latest
 inputs:
   input_data:
     type: path

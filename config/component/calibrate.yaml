@@ -10,7 +10,7 @@ command: >-
   --label ${{inputs.label}}
   --transformed_data ${{outputs.transformed_data}}
 code: ../../src/pipeline/model/calibrate
-environment: azureml:batch_training@latest
+environment: azureml:lgbmholoenv@latest
 inputs:
   datasets_pkl:
     type: path

@@ -10,7 +10,7 @@ command: >-
   --separator ${{inputs.separator}}
   --transformed_data ${{outputs.transformed_data}}
 code: ../../src/pipeline/features/input
-environment: azureml:batch_training@latest
+environment: azureml:lgbmholoenv@latest
 inputs:
   input_csv:
     type: path
