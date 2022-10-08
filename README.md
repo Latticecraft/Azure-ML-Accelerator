@@ -25,6 +25,10 @@ az deployment group create --resource-group ${RG_NAME} --template-uri https://ra
 ~~~
 4. The above command will create the ML-Builder ACI container in the specified resource group which will start an Airflow DAG and fully provision the Azure ML Service environment with a sample dataset as well as run the Featurization and Train pipelines.  This process generally takes around 30 minutes.  Once completed you can clone this repository and customize as needed with a new dataset.
 
+## Workflow
+
+![Workflow](http://www.latticecraft.ai/images/workflow2.svg)
+
 ## Folder structure
 
 > config
