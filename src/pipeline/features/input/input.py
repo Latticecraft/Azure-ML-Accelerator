@@ -5,6 +5,7 @@ import mlflow
 
 from azureml.core import Run
 from distutils.dir_util import copy_tree
+from pathlib import Path
 
 
 def main(ctx):
@@ -15,13 +16,7 @@ def main(ctx):
     elif args.separator == 'tab':
         sep = '\t'
 
-    # read csv and coerce float64 columns to float32
-    df = pd.read_csv(ctx['args'].input_csv, sep=sep, nrows=100)
-
-    float_cols = [c for c in df if df[c].dtype == "float64"]
-    float32_cols = {c: np.float32 for c in float_cols}
-
-    df = pd.read_csv(ctx['args'].input_csv, sep=sep, engine='c', dtype=float32_cols)
+    df = pd.read_csv(ctx['args'].input_csv, sep=sep, engine='c')
 
     # print env variables, first 5 rows and datatypes
     print( '\n'.join([f'{k}: {v}' for k, v in sorted(os.environ.items())]) )
@@ -38,7 +33,7 @@ def main(ctx):
             mlflow.log_metric(f'missing.{k}', v)
 
     # save data to outputs
-    df.to_csv('outputs/transformed.csv', index=False)
+    df.to_pickle((Path('outputs') / 'datasets.pkl'))
     copy_tree('outputs', args.transformed_data)
 
 

@@ -16,16 +16,22 @@ environment: azureml:lgbmholoenv@latest
 inputs:
   input_data:
     type: path
-  label:
-    type: string
-  replacements:
-    type: string
+  convert_inf:
+    type: boolean
   datatypes:
-    type: string
-  type:
     type: string
   drop_bools:
     type: boolean
+  index:
+    type: string
+  label:
+    type: string
+  remove_commas:
+    type: boolean
+  replacements:
+    type: string
+  type:
+    type: string
 outputs:
   transformed_data:
     type: path

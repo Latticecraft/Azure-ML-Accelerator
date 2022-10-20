@@ -43,32 +43,25 @@ def main(args):
                     'separator': '${{parent.inputs.separator}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
-                }
-            },
-            'set_header_job': {
-                'type': 'command',
-                'component': 'file:../../config/component/set_header.yaml',
-                'inputs': {
-                    'input_data': '${{parent.jobs.input_job.outputs.transformed_data}}'
-                },
-                'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'format_job': {
                 'type': 'command',
                 'component': 'file:../../config/component/format.yaml',
                 'inputs': {
-                    'input_data': '${{parent.jobs.set_header_job.outputs.transformed_data}}',
-                    'label': '${{parent.inputs.label}}',
-                    'replacements': '${{parent.inputs.replacements}}',
+                    'input_data': '${{parent.jobs.input_job.outputs.transformed_data}}',
+                    'convert_inf': True,
                     'datatypes': '${{parent.inputs.datatypes}}',
-                    'type': '${{parent.inputs.type}}',
-                    'drop_bools': '${{parent.inputs.drop_bools}}'
+                    'drop_bools': '${{parent.inputs.drop_bools}}',
+                    'index': 'None',
+                    'label': '${{parent.inputs.label}}',
+                    'remove_commas': True,
+                    'replacements': '${{parent.inputs.replacements}}',
+                    'type': '${{parent.inputs.type}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'select_nonlabel_job': {
@@ -80,7 +73,7 @@ def main(args):
                     'take_complement': True
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'select_unwanted_job': {
@@ -92,7 +85,7 @@ def main(args):
                     'take_complement': False
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'select_features_job': {
@@ -104,7 +97,7 @@ def main(args):
                     'take_complement': True
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'select_label_job': {
@@ -116,7 +109,7 @@ def main(args):
                     'take_complement': False
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'package_job': {
@@ -128,7 +121,7 @@ def main(args):
                     'unwanted_csv': '${{parent.jobs.select_unwanted_job.outputs.transformed_data}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'split_dataset_job': {    
@@ -138,7 +131,7 @@ def main(args):
                     'datasets_pkl': '${{parent.jobs.package_job.outputs.transformed_data}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'downsample_job': {
@@ -148,7 +141,7 @@ def main(args):
                     'datasets_pkl': '${{parent.jobs.split_dataset_job.outputs.transformed_data}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'dfs_job': {
@@ -162,7 +155,7 @@ def main(args):
                     'remove_single_val': '${{parent.inputs.remove_single_val}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'stats_job': {
@@ -172,7 +165,7 @@ def main(args):
                     'datasets_pkl': '${{parent.jobs.dfs_job.outputs.transformed_data}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'standardize_job': {
@@ -182,7 +175,7 @@ def main(args):
                     'datasets_pkl': '${{parent.jobs.stats_job.outputs.transformed_data}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'impute_job': {
@@ -192,7 +185,7 @@ def main(args):
                     'datasets_pkl': '${{parent.jobs.standardize_job.outputs.transformed_data}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'balancer_job': {
@@ -203,7 +196,7 @@ def main(args):
                     'type': '${{parent.inputs.type}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'register_dataset_job': {
@@ -216,7 +209,7 @@ def main(args):
                     'drop_bools': '${{parent.inputs.drop_bools}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             },
             'web_hook_job': {
@@ -239,7 +232,7 @@ def main(args):
                     'drop_bools': '${{parent.inputs.drop_bools}}'
                 },
                 'outputs': {
-                    'transformed_data': {}
+                    'transformed_data': ''
                 }
             }
         }
@@ -253,52 +246,15 @@ def main(args):
 
     with open(filepath, 'w') as f:
         yaml.SafeDumper.ignore_aliases = lambda *args: True
-        yaml.safe_dump(template, f, sort_keys=False,  default_flow_style=False)
+        yaml_str = yaml.safe_dump(template, sort_keys=False,  default_flow_style=False).replace(r"''", '')
+        f.write(yaml_str)
 
     if eval(args.run) == True:
         cmd = f'az ml job create --file {filepath} --stream --set inputs.project={args.project} --set inputs.type={args.type} --set inputs.input_csv.path={args.input} --set experiment_name={args.project} --set inputs.label={args.label} --set inputs.unwanted={args.unwanted} --set inputs.replacements={args.replacements} --set inputs.datatypes={args.datatypes} --set inputs.separator={args.separator} --set inputs.drop_bools={args.drop_bools} --set inputs.web_hook="{args.web_hook}" --set inputs.next_pipeline={args.next_pipeline}'
         print(f'Running command: {cmd}')
         
-        run_command(cmd)
-
-        # remove temp file
-        os.remove(filepath)
-
-
-def run_command(cmd):
-    process = subprocess.Popen(cmd.split(' '), bufsize=1, stdout = subprocess.PIPE, stderr = subprocess.STDOUT, universal_newlines = True)
-    
-    # Create callback function for process output
-    buf = io.StringIO()
-
-    # Register callback for an "available for read" event from subprocess' stdout stream
-    selector = selectors.DefaultSelector()
-    selector.register(process.stdout, selectors.EVENT_READ, None)
-
-    # Loop until subprocess is terminated
-    summary_started = False
-    while process.poll() is None:
-        # Wait for events and handle them with their registered callbacks
-        events = selector.select()
-        for key, mask in events:
-            line = key.fileobj.readline()
-
-            if 'Execution Summary' in line:
-                summary_started = True
-
-            if summary_started == False:
-                buf.write(line)
-                sys.stdout.write(line)
-
-    # Get process return code
-    return_code = process.wait()
-    selector.close()
-
-    success = (return_code == 0)
-
-    # Store buffered output
-    output = buf.getvalue()
-    buf.close()
+        proc = subprocess.run(cmd.split(' '))
+        print('The exit code was: %d' % proc.returncode)
 
 
 def parse_args():
