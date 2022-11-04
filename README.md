@@ -23,7 +23,7 @@ az login
 RG_NAME="ReplaceWithNewName"
 az group create --name ${RG_NAME}
 ROLE_ID=$(az role definition list --query "[?roleName=='Contributor'].name | [0]" |  tr -d '"')
-az deployment group create --resource-group ${RG_NAME} --template-uri https://raw.githubusercontent.com/Latticecraft/ML-Builder/main/config/azuredeploy.json --parameters roleDefinitionId=${ROLE_ID} imageLabel="3" vmSize="STANDARD_DS3_V2"
+az deployment group create --resource-group ${RG_NAME} --template-uri https://raw.githubusercontent.com/Latticecraft/ML-Builder/main/config/azuredeploy.json --parameters roleDefinitionId=${ROLE_ID} imageLabel="4" vmSize="STANDARD_DS3_V2"
 ~~~
 4. The above command will create the ML-Builder ACI container in the specified resource group which will start an Airflow DAG and fully provision the Azure ML Service environment with a sample dataset as well as run the Featurization and Train pipelines.  This process generally takes around 30 minutes.  Once completed you can clone this repository and customize as needed with a new dataset.
 
