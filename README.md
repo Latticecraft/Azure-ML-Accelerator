@@ -4,8 +4,6 @@
 
 The goal of this project is to generalize the activities found in most machine learning pipelines and package them up into a clean set of reusable pipelines that can then be adapted to many types of projects.
 
-Functionality will continue to be added along with more advanced scenarios including the automated HTML5 dashboard.  Please see http://latticecraft.ai for more information about current and planned features.
-
 ## Quickstart
 
 ### CLI
